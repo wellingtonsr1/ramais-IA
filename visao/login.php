@@ -25,9 +25,9 @@ cabecalhos_seguranca();?>
                                 <input class="usuario" type="text" name="usuario" id="usuario" autocomplete="off" autocorrect="off" autofocus placeholder="Digite seu usuário">
                             </div>
 
-                            <div>
+                            <div class="campo-senha">
                                 <input class="senha" type="password" name="senha" id="senha" placeholder="Digite sua senha">
-                                <button class="btn-senha" type="button" onclick="mostrarSenha('senha')"></button>
+                                <button class="btn-senha" type="button" onclick="mostrarSenha('senha')" aria-label="Mostrar ou ocultar senha"></button>
                             </div>
 
                             <?php if (isset($_GET['login']) && $_GET['login'] === 'erro'): ?>

@@ -61,10 +61,10 @@ if ($registro === null) {
                                 <span id='spanSenhaConfirmada' class="nao-visivel">Mínimo 8 caracteres: números, letras e @$&amp;!#%</span>
                             </div>
 
-                            <div>
+                            <div class="campo-senha">
                                 <input class="campo-input" type="password" name="senhaConfirmada" id="senhaConfirmada" placeholder="Repita a senha"
                                 onkeyup="verificarTextoSenhaConfirmada()" required>
-                                <button class="btn-senha" type="button" onclick="mostrarSenha('novaSenha', 'senhaConfirmada')"></button>
+                                <button class="btn-senha" type="button" onclick="mostrarSenha('novaSenha', 'senhaConfirmada')" aria-label="Mostrar ou ocultar senha"></button>
                             </div>
                             <div>
                                 <input type="checkbox" id="primeiroacesso" name="primeiroacesso" value="sim"> Usuário deve alterar a senha.

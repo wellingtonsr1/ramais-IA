@@ -43,10 +43,10 @@ if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
                                 <label for="senha">Senha <span class="label-asterisco">*</span></label>
                                 <span id='spanSenha' class="nao-visivel">Mínimo 8 caracteres: números, letras e @$&amp;!#%</span>
                             </div>
-                            <div>
+                            <div class="campo-senha">
                                 <input class="campo-formulario" type="password" name="senha" id="senha" maxlength="20" placeholder="Informe a senha" required
                                 onkeyup="verificarTextoSenha()">
-                                <button class="btn-senha" type="button" onclick="mostrarSenha('senha')"></button>
+                                <button class="btn-senha" type="button" onclick="mostrarSenha('senha')" aria-label="Mostrar ou ocultar senha"></button>
                             </div>
                             <div class="checkbox">
                                 <label><input type="checkbox" id="primeiroacesso" name="primeiroacesso" value="sim"> Usuário deve alterar a senha.</label>

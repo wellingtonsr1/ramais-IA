@@ -47,10 +47,10 @@ $_SESSION['opcao'] = 'alt'; // the user is changing their own password
                                 <label for="senhaConfirmada">Confirme a senha <span class="label-asterisco">*</span></label>
                                 <span id='spanSenhaConfirmada' class="nao-visivel">Mínimo 8 caracteres: números, letras e @$&amp;!#%</span>
                             </div>
-                            <div>
+                            <div class="campo-senha">
                                 <input class="campo-input" type="password" name="senhaConfirmada" id="senhaConfirmada" placeholder="Repita a senha"
                                 onkeyup="verificarTextoSenhaConfirmada()" required>
-                                <button class="btn-senha" type="button" onclick="mostrarSenha('novaSenha', 'senhaConfirmada')"></button>
+                                <button class="btn-senha" type="button" onclick="mostrarSenha('novaSenha', 'senhaConfirmada')" aria-label="Mostrar ou ocultar senha"></button>
                             </div>
                         </div>
                         <div><p class="campo-obrigatorio-altera-senha"><span class="label-asterisco">*</span> Campo(s) de preenchimento obrigatório.</p></div>

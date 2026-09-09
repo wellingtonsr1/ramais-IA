@@ -200,15 +200,52 @@ input{
     background-repeat: no-repeat;
     background-position: 10px;
     border-radius: 6px;
+    /* Garante que larguras iguais (usuario x senha) resultem em larguras
+       TOTAIS iguais, mesmo com paddings diferentes (ex.: padding-right do olho). */
+    box-sizing: border-box;
 }
 
 input.usuario{
     background-image: url("../imagem/icone-usuario.png");
-    margin-left: -34px;
+    /* Mesma largura do campo de senha (.campo-senha no login) para as bordas
+       esquerda/direita ficarem alinhadas. O antigo margin-left: -34px foi
+       removido: ele deslocava o campo e impedia o alinhamento. */
+    width: 260px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 input.senha{
-    background-image: url("../imagem/icone-cadeado.png"); 
+    background-image: url("../imagem/icone-cadeado.png");
+}
+
+/* Campo de senha com o botao mostrar/ocultar DENTRO do campo.
+   Exibicao inline-block + text-align herdado do login: o wrapper fica
+   centralizado exatamente como o input.usuario (tambem inline-block). */
+.campo-senha{
+    position: relative;
+    display: inline-block;
+    width: 260px; /* mesma largura total do input.usuario */
+    margin-bottom: 10px; /* ritmo vertical que antes vinha do margin do input */
+}
+
+.campo-senha input{
+    width: 100%;
+    padding-right: 40px; /* reserva espaco para o olho; o texto nao fica por baixo dele */
+    margin-bottom: 0; /* wrapper controla o espacamento; mantem o olho no centro vertical */
+}
+
+/* Nos formularios com labels (esquerda), o wrapper NAO pode herdar
+   text-align: center do form, senao desalinha da coluna de campos. */
+.lado-esquerdo .campo-senha,
+.inputs-alterar-senha .campo-senha{
+    display: block;
+    text-align: left;
+    width: 335px; /* mesma largura do .campo-formulario */
+}
+
+.inputs-alterar-senha .campo-senha{
+    width: 220px; /* mesma largura do .campo-input */
 }
 
 input.search{
@@ -565,10 +602,16 @@ a.img-topo{
        (O icone antes apontava para o arquivo externo ../imagem/olho.png; agora e
        SVG inline, mesmo desenho: contorno do olho + pupila, sem biblioteca nova.) */
     background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2'%3E%3Cpath d='M1 12C5 5.5 19 5.5 23 12C19 18.5 5 18.5 1 12Z'/%3E%3Ccircle cx='12' cy='12' r='3.4' fill='%23333' stroke='none'/%3E%3Cpath d='M21 3L3 21' stroke='%23fff' stroke-width='4.5' stroke-linecap='round'/%3E%3Cpath d='M21 3L3 21' stroke-linecap='round'/%3E%3C/svg%3E") center center / 18px 16px no-repeat;
+    position: absolute;   /* ancora: o wrapper .campo-senha (position: relative) */
+    right: 10px;          /* extremidade direita, DENTRO do campo */
+    top: 50%;
+    transform: translateY(-50%); /* centrado verticalmente no campo */
     width: 28px;
     height: 25px;
+    padding: 0;
+    border: 0;
     border-radius: 6px;
-    padding-top: 11px;
+    cursor: pointer;
  }
 
 /* Senha VISIVEL (o campo virou type="text") -> olho aberto.
