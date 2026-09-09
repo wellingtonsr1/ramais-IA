@@ -387,6 +387,8 @@ td.center{
     text-align: center;
 }
 
+
+
 th.ramal{
     width:120px;
     text-align: center;
@@ -395,6 +397,16 @@ th.ramal{
 td.ramal{
     width:130px;
     text-align: center;
+}
+
+.ramal-valor{
+    display: inline-block;
+    background: #F4F0EA;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #7A5A3A;
 }
 
 th.center{
@@ -803,5 +815,248 @@ input.campo-text-editar-email{
   
 .nao-visivel {
     visibility: hidden;
+}
+
+/*==================== MELHORIAS 1-4 (responsivo, contraste, foco, estados) ====================*/
+
+/* --- Contraste: links de texto #FF6A6A tinham ~2.1:1 (WCAG AA exige 4.5:1).
+   Mesma família institucional (salmão escurecido), agora ~5.4:1 sobre claro. --- */
+a:link,
+a:visited{
+    color: #B23A3A;
+}
+
+/* --- Foco de teclado visível, coerente com o hover existente --- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible{
+    outline: 2px solid #8B2323;
+    outline-offset: 2px;
+}
+
+.table-container a:focus-visible,
+.table-container button:focus-visible{
+    outline-offset: 0;
+}
+
+/* --- Contraste nos botões da barra de filtros (era 2.5:1) --- */
+.btn-filtrar{
+    color: #fff;
+    background-color: #4F7CA8;
+    border: 1px solid #3E6789;
+}
+
+/* --- Layout fluido: mesma aparência no desktop (limitado a 1020px),
+   sem rolagem horizontal em telas menores --- */
+#principal{
+    width: auto;
+    max-width: 1020px;
+}
+
+footer{
+    width: auto;
+    max-width: 1010px;
+}
+
+/* --- Estado vazio da busca: antes exibia tabela sem nenhuma mensagem --- */
+.sem-resultados{
+    padding: 14px 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 1em;
+    color: #8B2323;
+    background: #FDF3F3;
+    border: 1px dashed #B23A3A;
+    border-radius: 8px;
+}
+
+/* controle de exibicao da caixa de "nenhum resultado" (JS alterna o hidden) */
+.sem-resultados[hidden]{
+    display: none;
+}
+
+.btn-limpar-filtro{
+    margin-left: 8px;
+    padding: 3px 12px;
+    color: #fff;
+    background-color: #8B2323;
+    border: 1px solid #6E1B1B;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+/* Linhas que nao casam com a busca instantanea (JS adiciona/remove a classe).
+   Seletor reforçado para vencer as regras de cartao do mobile (tabela.table-container tr). */
+tr.oculto-busca,
+table.table-container tr.oculto-busca{
+    display: none;
+}
+
+/* ========================================= MOBILE (melhoria 1) ========================================= */
+
+/* Notbook pequeno / tablet paisagem: folga horizontal, campo de busca maior */
+@media (max-width: 1080px){
+    .lado-esquerdo-filtrar,
+    .lado-direito-filtrar{
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .campo-filtrar{
+        width: 250px;
+    }
+}
+
+/* Tablet / celular em larguras intermediarias: area de filtro empilha */
+@media (max-width: 760px){
+    body{
+        font-size: 1em;
+    }
+
+    #topo{
+        border-radius: 10px;
+    }
+
+    /* area de filtros vira coluna: busca em cima, acoes embaixo */
+    #area-filtrar{
+        height: auto;
+    }
+
+    .lado-esquerdo-filtrar,
+    .lado-direito-filtrar{
+        float: none;
+        margin: 0 0 10px 0;
+        text-align: center;
+    }
+
+    .campo-filtrar{
+        width: 70%;
+        max-width: 320px;
+    }
+
+    .lado-direito-filtrar a{
+        display: inline-block;
+        margin: 2px 0;
+    }
+
+    /* ---- Tabela -> cartoes: sem rolagem horizontal, cada setor vira um bloco ---- */
+    .table-container{
+        display: block;
+        height: auto;
+    }
+
+    table.table-container{
+        display: block;
+        height: auto;
+        border: none;
+    }
+
+    table.table-container thead{
+        display: none; /* os rotulos passam a viver dentro de cada cartao */
+    }
+
+    table.table-container tbody{
+        display: block;
+        overflow: visible;
+    }
+
+    table.table-container tr{
+        display: block;
+        width: auto;
+        margin: 0 0 12px 0;
+        border: 1px solid lightgrey;
+        border-radius: 10px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    table.table-container td{
+        display: block;
+        width: auto;
+        border: none;
+        border-bottom: 1px solid #EEE;
+        padding: 7px 12px;
+        text-align: left;
+    }
+
+    table.table-container td:last-child{
+        border-bottom: none;
+    }
+
+    /* rotulo antes de cada celula, lido do atributo data-label */
+    table.table-container td::before{
+        content: attr(data-label);
+        display: block;
+        font-size: 0.75em;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #6E6E6E;
+        margin-bottom: 2px;
+    }
+
+    /* ramal ganha destaque dentro do cartao */
+    td.ramal,
+    td.center{
+        font-weight: bold;
+        font-size: 1.15em;
+    }
+
+    .ramal-valor{
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        color: inherit;
+        font-weight: 700;
+    }
+
+    .ramal-valor{
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        color: inherit;
+        font-weight: 700;
+    }
+
+    td.alinhamento-btn{
+        text-align: left;
+    }
+
+    /* altura fixa da tabela nao faz sentido no empilhamento */
+    .table-container{
+        padding: 0;
+    }
+
+    /* rodape e area de mensagens acompanham a largura da tela */
+    .area-msg,
+    .error,
+    .sucesso,
+    .atencao{
+        width: auto;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    footer{
+        margin: 15px 10px;
+        text-align: center;
+    }
+}
+
+/* Celular estreito: cabeçalho empilha logo e titulo */
+@media (max-width: 480px){
+    #logo img{
+        width: 150px;
+        height: auto;
+    }
+
+    #texto-logo h1{
+        font-size: 1.2em;
+    }
+
+    .campo-filtrar{
+        width: 85%;
+    }
 }
 

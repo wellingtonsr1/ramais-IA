@@ -47,13 +47,13 @@ $registros = verificarUsuario($usuario); // P-29: broken inline comment removed
                                     <td class="center"><?= e((string)($dados['email'] ?? '')) ?></td>
 
                                     <td class="alinhamento-btn">
-                                        <a class="btn-editar" title="Editar usuário" href="form-editar-usuario.php?id=<?= (int)$dados['id'] ?>"></a>
+                                        <a class="btn-editar" title="Editar usuário" aria-label="Editar usuário <?= e((string)$dados['usuario']) ?>" href="form-editar-usuario.php?id=<?= (int)$dados['id'] ?>"></a>
                                         <form action="../controle/controle-deletar-usuario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dados['usuario']) ?> ?', '');">
                                             <?php echo campo_csrf(); ?>
                                             <input type="hidden" name="id" value="<?= (int)$dados['id'] ?>">
-                                            <button type="submit" class="btn-excluir" title="Excluir usuário"></button>
+                                            <button type="submit" class="btn-excluir" title="Excluir usuário" aria-label="Excluir usuário <?= e((string)$dados['usuario']) ?>"></button>
                                         </form>
-                                        <a class="btn-alterar-senha" title="Redefinir senha" href="form-redefinir-senha.php?id=<?= (int)$dados['id'] ?>"></a>
+                                        <a class="btn-alterar-senha" title="Redefinir senha" aria-label="Redefinir senha do usuário <?= e((string)$dados['usuario']) ?>" href="form-redefinir-senha.php?id=<?= (int)$dados['id'] ?>"></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

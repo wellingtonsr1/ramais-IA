@@ -54,13 +54,12 @@ $funcionarios = ($nome !== '') ? buscarFuncionario($nome) : [];
                                 <td class="center"><?= e((string)$dadosFuncionario['setor']) ?></td>
                                 <td class="center"><?= e(formatarTelefone((string)($dadosFuncionario['telefone'] ?? ''))) ?></td>
 
-                                <td class="alinhamento-btn">
-                                    <a class="btn-editar" title="Editar funcionário" href="form-editar-funcionario.php?idFunc=<?= (int)$dadosFuncionario['idFunc'] ?>"></a>
-                                    <form action="../controle/controle-deletar-funcionario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dadosFuncionario['nome']) ?> ?');">
-                                        <?php echo campo_csrf(); ?>
-                                        <input type="hidden" name="idFunc" value="<?= (int)$dadosFuncionario['idFunc'] ?>">
-                                        <button type="submit" class="btn-excluir" title="Excluir funcionário"></button>
-                                    </form>
+                                <td class="alinhamento-btn"><a class="btn-editar" title="Editar funcionário" aria-label="Editar funcionário <?= e((string)$dadosFuncionario['nome']) ?>" href="form-editar-funcionario.php?idFunc=<?= (int)$dadosFuncionario['idFunc'] ?>"></a>
+                                        <form action="../controle/controle-deletar-funcionario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dadosFuncionario['nome']) ?> ?');">
+                                            <?php echo campo_csrf(); ?>
+                                            <input type="hidden" name="idFunc" value="<?= (int)$dadosFuncionario['idFunc'] ?>">
+                                            <button type="submit" class="btn-excluir" title="Excluir funcionário" aria-label="Excluir funcionário <?= e((string)$dadosFuncionario['nome']) ?>"></button>
+                                        </form>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

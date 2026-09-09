@@ -35,7 +35,6 @@ $funcionarios = buscarFuncionariosPorSetor($idSetor);
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
         <title>Listar Funcionários</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
     </head>
 
@@ -66,6 +65,12 @@ $funcionarios = buscarFuncionariosPorSetor($idSetor);
             </div>
 
             <div id="area-tabela">
+                <?php if (count($funcionarios) === 0): ?>
+                    <div class="sem-resultados">
+                        Nenhum funcionário cadastrado neste setor.
+                        <a href="listar-ramais.php">Voltar</a>
+                    </div>
+                <?php endif; ?>
                 <table class="table-container">
                     <thead>
                         <tr>
@@ -81,17 +86,17 @@ $funcionarios = buscarFuncionariosPorSetor($idSetor);
                     <tbody>
                         <?php foreach ($funcionarios as $dadosFuncionario): ?>
                             <tr>
-                                <td><?= e((string)$dadosFuncionario['nome']) ?></td>
-                                <td class="center"><?= e($setorNome) ?></td>
-                                <td class="center"><?= e(formatarTelefone((string)($dadosFuncionario['telefone'] ?? ''))) ?></td>
+                                <td data-label="Funcionário"><?= e((string)$dadosFuncionario['nome']) ?></td>
+                                <td class="center" data-label="Setor"><?= e($setorNome) ?></td>
+                                <td class="center" data-label="Celular"><?= e(formatarTelefone((string)($dadosFuncionario['telefone'] ?? ''))) ?></td>
 
                                 <?php if ($ehAdmin): ?>
                                     <td class="alinhamento-btn">
-                                        <a class="btn-editar" title="Editar funcionário" href="form-editar-funcionario.php?idFunc=<?= (int)$dadosFuncionario['idFunc'] ?>"></a>
+                                        <a class="btn-editar" title="Editar funcionário" aria-label="Editar funcionário <?= e((string)$dadosFuncionario['nome']) ?>" href="form-editar-funcionario.php?idFunc=<?= (int)$dadosFuncionario['idFunc'] ?>"></a>
                                         <form action="../controle/controle-deletar-funcionario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dadosFuncionario['nome']) ?> ?');">
                                             <?php echo campo_csrf(); ?>
                                             <input type="hidden" name="idFunc" value="<?= (int)$dadosFuncionario['idFunc'] ?>">
-                                            <button type="submit" class="btn-excluir" title="Excluir funcionário"></button>
+                                            <button type="submit" class="btn-excluir" title="Excluir funcionário" aria-label="Excluir funcionário <?= e((string)$dadosFuncionario['nome']) ?>"></button>
                                         </form>
                                     </td>
                                 <?php endif; ?>

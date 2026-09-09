@@ -23,8 +23,7 @@ $registros = pegarSetoresPorPrefixo($setor);
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
-        <title>Pesquisar ramal</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <title>Pesquisar ramal — IPMJP</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
     </head>
 
@@ -40,6 +39,12 @@ $registros = pegarSetoresPorPrefixo($setor);
             </div>
 
             <div id="area-tabela">
+                <?php if (count($registros) === 0): ?>
+                    <div class="sem-resultados">
+                        Nenhum setor encontrado para a pesquisa.
+                        <a href="listar-ramais.php">Limpar filtros</a>
+                    </div>
+                <?php endif; ?>
                 <table class="table-container">
                     <thead>
                         <tr>
@@ -55,20 +60,20 @@ $registros = pegarSetoresPorPrefixo($setor);
                         <?php foreach ($registros as $dados): ?>
                             <?php $ramalExibido = ($dados['ramal'] == 0) ? '' : $dados['ramal']; ?>
                             <tr>
-                                <td><?= e((string)$dados['setor']) ?></td>
-                                <td class="center"><?= e((string)$ramalExibido) ?></td>
-                                <td class="email"><?= e((string)($dados['responsavel'] ?? '')) ?></td>
+                                <td data-label="Setor"><?= e((string)$dados['setor']) ?></td>
+                                <td class="center" data-label="Ramal"><span class="ramal-valor"><?= e((string)$ramalExibido) ?></span></td>
+                                <td class="email" data-label="Responsável"><?= e((string)($dados['responsavel'] ?? '')) ?></td>
 
                                 <?php if ($exibirBotoes): ?>
                                     <td class="alinhamento-btn">
-                                        <a class="btn-funcionarios" title="Exibir Funcionários" href="listar-funcionarios-com-setor.php?idSetor=<?= (int)$dados['idSetor'] ?>&setor=<?= urlencode((string)$dados['setor']) ?>"></a>
-                                        <a class="btn-editar" title="Alterar ramal" href="form-editar-ramal.php?idSetor=<?= (int)$dados['idSetor'] ?>&setor=<?= urlencode((string)$dados['setor']) ?>&ramal=<?= urlencode((string)$ramalExibido) ?>&responsavel=<?= urlencode((string)($dados['responsavel'] ?? '')) ?>"></a>
+                                        <a class="btn-funcionarios" title="Exibir Funcionários" aria-label="Exibir funcionários do setor <?= e((string)$dados['setor']) ?>" href="listar-funcionarios-com-setor.php?idSetor=<?= (int)$dados['idSetor'] ?>&setor=<?= urlencode((string)$dados['setor']) ?>"></a>
+                                        <a class="btn-editar" title="Alterar ramal" aria-label="Alterar ramal do setor <?= e((string)$dados['setor']) ?>" href="form-editar-ramal.php?idSetor=<?= (int)$dados['idSetor'] ?>&setor=<?= urlencode((string)$dados['setor']) ?>&ramal=<?= urlencode((string)$ramalExibido) ?>&responsavel=<?= urlencode((string)($dados['responsavel'] ?? '')) ?>"></a>
 
                                         <?php if ($ehAdmin): ?>
                                             <form action="../controle/controle-deletar-ramal.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dados['setor']) ?> ?');">
                                                 <?php echo campo_csrf(); ?>
                                                 <input type="hidden" name="idSetor" value="<?= (int)$dados['idSetor'] ?>">
-                                                <button type="submit" class="btn-excluir" title="Excluir ramal"></button>
+                                                <button type="submit" class="btn-excluir" title="Excluir ramal" aria-label="Excluir ramal do setor <?= e((string)$dados['setor']) ?>"></button>
                                             </form>
                                         <?php endif; ?>
                                     </td>

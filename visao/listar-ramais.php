@@ -19,8 +19,7 @@ $ehAdmin      = ($_SESSION['nivel'] ?? '') === 'admin';
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
-        <title>Listar ramais</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <title>Listar ramais — IPMJP</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
     </head>
 
@@ -30,26 +29,49 @@ $ehAdmin      = ($_SESSION['nivel'] ?? '') === 'admin';
 
             <div id="area-filtrar">
                 <div class="lado-esquerdo-filtrar">
-                    <form action="filtrar-ramal.php" method="post">
+                    <form action="filtrar-ramal.php" method="post" onsubmit="return filtrarTabelaInstantanea('setor', 'msg-sem-resultados') && filtrarTabelaPorRamal('setor', 'msg-sem-resultados');">
                         <?php echo campo_csrf(); ?>
-                        <input class="campo-filtrar" type="text" name="setor" id="setor" placeholder="Informe o setor ou nome" autocomplete="off" autocorrect="off" autofocus required>
-                        <button class="btn-filtrar" id="btnBusca">Filtrar</button>
+                        <label class="label-campo-busca" for="setor">
+                            <span class="label-texto-busca">Setor ou nome</span>
+                            <input class="campo-filtrar" type="text" name="setor" id="setor" placeholder="Informe o setor ou nome" autocomplete="off" autocorrect="off" autofocus required
+                            oninput="filtrarTabelaInstantanea('setor', 'msg-sem-resultados')" aria-label="Pesquisar por setor ou nome">
+                        </label>
+                        <label class="label-campo-busca" for="ramal">
+                            <span class="label-texto-busca">Ramal</span>
+                            <input class="campo-filtrar" type="text" name="ramal" id="ramal" placeholder="Ou apenas o ramal" inputmode="numeric" maxlength="8" autocomplete="off" autocorrect="off"
+                            oninput="verificarTextoRamal(); filtrarTabelaPorRamal('setor', 'msg-sem-resultados');" aria-label="Pesquisar pelo número do ramal">
+                            <span id="spanRamal" class="nao-visivel" style="font-size:0.8em; margin-left:6px;">Somente números</span>
+                        </label>
+                        <div class="row-botoes-busca">
+                            <button class="btn-filtrar" id="btnBusca" type="submit">Filtrar</button>
+                            <button class="btn-limpar-filtro" type="button" onclick="return limparFiltroTabela('setor', 'msg-sem-resultados');">Limpar</button>
+                        </div>
                     </form>
                 </div>
                 <div class="lado-direito-filtrar">
-                    <a href="../modelo/exportar-em-pdf.php">Salvar em PDF</a>
-
-                    <?php if ($exibirBotoes): ?>
-                        <a href="form-adicionar-ramal.php">Adicionar</a>
-                        <a href="../index.php">Home</a>
-                        <a href="../controle/logoff.php">Sair</a>
-                    <?php else: ?>
-                        <a href="login.php">Login</a>
-                    <?php endif; ?>
+                    <div class="acoes-secundarias">
+                        <a href="../modelo/exportar-em-pdf.php" aria-label="Baixar lista de ramais em PDF">Salvar em PDF</a>
+                        <?php if ($exibirBotoes): ?>
+                            <a href="form-adicionar-ramal.php">Adicionar</a>
+                            <a href="../index.php">Home</a>
+                            <a href="../controle/logoff.php">Sair</a>
+                        <?php else: ?>
+                            <a href="login.php">Login</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
 
+            <div id="area-busca-ativa" class="area-busca-ativa" hidden>
+                <span id="busca-ativa-texto"></span>
+                <span id="busca-ativa-count" class="busca-ativa-count"></span>
+            </div>
+
             <div id="area-tabela">
+                <div id="msg-sem-resultados" class="sem-resultados" hidden>
+                    Nenhum setor ou funcionário encontrado.
+                    <button class="btn-limpar-filtro" type="button" onclick="return limparFiltroTabela('setor', 'msg-sem-resultados')">Limpar busca</button>
+                </div>
                 <table class="table-container">
                     <thead>
                         <tr>
@@ -65,15 +87,15 @@ $ehAdmin      = ($_SESSION['nivel'] ?? '') === 'admin';
                         <?php foreach ($listaDeRegistros as $dadosRamal): ?>
                             <?php $ramalExibido = ($dadosRamal['ramal'] == 0) ? '' : $dadosRamal['ramal']; ?>
                             <tr>
-                                <td><?= e($dadosRamal['setor']) ?></td>
-                                <td class="ramal"><?= e((string)$ramalExibido) ?></td>
-                                <td class="responsavel"><?= e((string)($dadosRamal['responsavel'] ?? '')) ?></td>
+                                <td data-label="Setor"><?= e($dadosRamal['setor']) ?></td>
+                                <td class="ramal" data-label="Ramal"><span class="ramal-valor"><?= e((string)$ramalExibido) ?></span></td>
+                                <td class="responsavel" data-label="Responsável"><?= e((string)($dadosRamal['responsavel'] ?? '')) ?></td>
 
-                                <td class="alinhamento-btn">
-                                    <a class="btn-funcionarios" title="Exibir Funcionários" href="listar-funcionarios-com-setor.php?idSetor=<?= (int)$dadosRamal['idSetor'] ?>&setor=<?= urlencode((string)$dadosRamal['setor']) ?>"></a>
+                                <td class="alinhamento-btn" data-label="Ação">
+                                    <a class="btn-funcionarios" title="Exibir Funcionários" aria-label="Exibir funcionários do setor <?= e((string)$dadosRamal['setor']) ?>" href="listar-funcionarios-com-setor.php?idSetor=<?= (int)$dadosRamal['idSetor'] ?>&setor=<?= urlencode((string)$dadosRamal['setor']) ?>"></a>
 
                                     <?php if ($exibirBotoes): ?>
-                                        <a class="btn-editar" title="Alterar ramal" href="form-editar-ramal.php?idSetor=<?= (int)$dadosRamal['idSetor'] ?>&setor=<?= urlencode((string)$dadosRamal['setor']) ?>&ramal=<?= urlencode((string)$ramalExibido) ?>&responsavel=<?= urlencode((string)($dadosRamal['responsavel'] ?? '')) ?>"></a>
+                                        <a class="btn-editar" title="Alterar ramal" aria-label="Alterar ramal do setor <?= e((string)$dadosRamal['setor']) ?>" href="form-editar-ramal.php?idSetor=<?= (int)$dadosRamal['idSetor'] ?>&setor=<?= urlencode((string)$dadosRamal['setor']) ?>&ramal=<?= urlencode((string)$ramalExibido) ?>&responsavel=<?= urlencode((string)($dadosRamal['responsavel'] ?? '')) ?>"></a>
                                     <?php endif; ?>
 
                                     <?php if ($ehAdmin): ?>
@@ -81,7 +103,7 @@ $ehAdmin      = ($_SESSION['nivel'] ?? '') === 'admin';
                                         <form action="../controle/controle-deletar-ramal.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dadosRamal['setor']) ?> ?');">
                                             <?php echo campo_csrf(); ?>
                                             <input type="hidden" name="idSetor" value="<?= (int)$dadosRamal['idSetor'] ?>">
-                                            <button type="submit" class="btn-excluir" title="Excluir ramal"></button>
+                                            <button type="submit" class="btn-excluir" title="Excluir ramal" aria-label="Excluir ramal do setor <?= e((string)$dadosRamal['setor']) ?>"></button>
                                         </form>
                                     <?php endif; ?>
                                 </td>

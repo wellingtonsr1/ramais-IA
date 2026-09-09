@@ -11,7 +11,7 @@ if (!isset($_SESSION['usuario']) || $_SESSION['usuario'] === '') {
     <script src="../js/funcoes.js"></script>
 
     <div id="logo">
-        <img width="190" src="../imagem/ipmjp.png" alt="logo-ipmjp">
+        <img width="190" src="../imagem/ipmjp.png" alt="Logotipo do IPMJP">
     </div>
 
     <div id="texto-logo">

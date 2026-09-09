@@ -55,13 +55,13 @@ $registros = ($usuario !== '') ? verificarUsuario($usuario) : [];
                                 <td class="center"><?= e((string)($registro['email'] ?? '')) ?></td>
 
                                 <td class="alinhamento-btn">
-                                    <a class="btn-editar" title="Editar usuário" href="form-editar-usuario.php?id=<?= (int)$registro['id'] ?>"></a>
+                                    <a class="btn-editar" title="Editar usuário" aria-label="Editar usuário <?= e((string)$registro['usuario']) ?>" href="form-editar-usuario.php?id=<?= (int)$registro['id'] ?>"></a>
                                     <form action="../controle/controle-deletar-usuario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$registro['usuario']) ?> ?', '');">
                                         <?php echo campo_csrf(); ?>
                                         <input type="hidden" name="id" value="<?= (int)$registro['id'] ?>">
-                                        <button type="submit" class="btn-excluir" title="Excluir usuário"></button>
+                                        <button type="submit" class="btn-excluir" title="Excluir usuário" aria-label="Excluir usuário <?= e((string)$registro['usuario']) ?>"></button>
                                     </form>
-                                    <a class="btn-alterar-senha" title="Redefinir senha" href="form-redefinir-senha.php?id=<?= (int)$registro['id'] ?>"></a>
+                                    <a class="btn-alterar-senha" title="Redefinir senha" aria-label="Redefinir senha do usuário <?= e((string)$registro['usuario']) ?>" href="form-redefinir-senha.php?id=<?= (int)$registro['id'] ?>"></a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

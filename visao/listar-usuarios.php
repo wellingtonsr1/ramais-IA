@@ -17,7 +17,6 @@ if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
         <title>Listar usuários</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
     </head>
 
@@ -59,14 +58,14 @@ if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
                                 <td class="center"><?= e((string)$dadosUsuario['nivel']) ?></td>
                                 <td class="email"><?= e((string)($dadosUsuario['email'] ?? '')) ?></td>
                                 <td class="alinhamento-btn">
-                                    <a class="btn-editar" title="Editar usuário" href="form-editar-usuario.php?id=<?= (int)$dadosUsuario['id'] ?>"></a>
+                                    <a class="btn-editar" title="Editar usuário" aria-label="Editar usuário <?= e((string)$dadosUsuario['usuario']) ?>" href="form-editar-usuario.php?id=<?= (int)$dadosUsuario['id'] ?>"></a>
                                     <!-- P-08: deletion is now a POST form with CSRF -->
                                     <form action="../controle/controle-deletar-usuario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dadosUsuario['usuario']) ?> ?', 'Lembre-se: É preciso ao menos um administrador');">
                                         <?php echo campo_csrf(); ?>
                                         <input type="hidden" name="id" value="<?= (int)$dadosUsuario['id'] ?>">
-                                        <button type="submit" class="btn-excluir" title="Excluir usuário"></button>
+                                        <button type="submit" class="btn-excluir" title="Excluir usuário" aria-label="Excluir usuário <?= e((string)$dadosUsuario['usuario']) ?>"></button>
                                     </form>
-                                    <a class="btn-alterar-senha" title="Redefinir senha" href="form-redefinir-senha.php?id=<?= (int)$dadosUsuario['id'] ?>"></a>
+                                    <a class="btn-alterar-senha" title="Redefinir senha" aria-label="Redefinir senha do usuário <?= e((string)$dadosUsuario['usuario']) ?>" href="form-redefinir-senha.php?id=<?= (int)$dadosUsuario['id'] ?>"></a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

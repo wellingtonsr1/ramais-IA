@@ -15,15 +15,37 @@ function mostrarSenha(senha_1, senha_2) {
 // Ramal: digits only (hint shown; the value is NO LONGER wiped on each keyup - UX fix)
 function verificarTextoRamal() {
     const input = document.getElementById('ramal');
+    if (!input) {
+        return;
+    }
     let pattRamal = /^[0-9]+$/;
-    document.getElementById("spanRamal").className =
-        (input.value !== '' && !pattRamal.test(input.value)) ? "visivel" : "nao-visivel";
+    const span = document.getElementById('spanRamal');
+    const spanInvalido = document.getElementById('spanRamalInvalido');
+    const atual = input.value.trim();
+
+    if (atual === '') {
+        if (span) {
+            span.className = 'nao-visivel';
+        }
+        if (spanInvalido) {
+            spanInvalido.className = 'nao-visivel';
+        }
+        return;
+    }
+
+    const valido = pattRamal.test(atual);
+    if (span) {
+        span.className = valido ? 'visivel' : 'nao-visivel';
+    }
+    if (spanInvalido) {
+        spanInvalido.className = valido ? 'nao-visivel' : 'visivel';
+    }
 }
 
 // Setor
 function verificarTextoSetor() {
     const input = document.getElementById('setor');
-    let pattSetor = /^[A-Za-z0-9à-úÀ-ÚçÇ][A-Za-z0-9à-úÀ-ÚçÇ\s\/\.\-_]{0,34}$/;
+    let pattSetor = /^[A-Za-z0-9à-úÀ-ÚçÇ][A-Za-z0-9à-úÀ-ÚçÇ\\s\\/\\.\\-_]{0,34}$/;
     document.getElementById("spanSetor").className =
         (input.value !== '' && !pattSetor.test(input.value)) ? "visivel" : "nao-visivel";
 }
@@ -31,7 +53,7 @@ function verificarTextoSetor() {
 // Responsavel
 function verificarTextoResponsavel() {
     const input = document.getElementById('responsavel');
-    let pattResponsavel = /^[A-Za-zà-úÀ-ÚçÇ][A-Za-zà-úÀ-ÚçÇ\s\/\.\-]{0,24}$/;
+    let pattResponsavel = /^[A-Za-zà-úÀ-ÚçÇ][A-Za-zà-úÀ-ÚçÇ\\s\\/\\.\\-]{0,24}$/;
     document.getElementById("spanResponsavel").className =
         (input.value !== '' && !pattResponsavel.test(input.value)) ? "visivel" : "nao-visivel";
 }
@@ -47,7 +69,7 @@ function verificarTextoUsuario() {
 // Funcionario (nome)
 function verificarTextoFuncionario() {
     const input = document.getElementById('nome');
-    let pattNome = /^[A-Za-zà-úÀ-ÚçÇ][A-Za-zà-úÀ-ÚçÇ\s\/\.\-]{0,38}$/;
+    let pattNome = /^[A-Za-zà-úÀ-ÚçÇ][A-Za-zà-úÀ-ÚçÇ\\s\\/\\.\\-]{0,38}$/;
     document.getElementById("spanFuncionario").className =
         (input.value !== '' && !pattNome.test(input.value)) ? "visivel" : "nao-visivel";
 }
@@ -274,4 +296,98 @@ function erroSenha(titulo) {
             type: 'error'
         });
     });
+}
+
+/* ===================== MELHORIAS 2 e 3 (busca instantanea + limpar filtro) =====================
+   Filtra no cliente as linhas da tabela ja carregada, sem recarregar a pagina.
+   Nao substitui o envio ao servidor: o formulario continua funcionando
+   exatamente como antes (Enter/botao Filtrar). */
+
+function filtrarTabelaInstantanea(idCampo, idMensagem) {
+    const campo = document.getElementById(idCampo);
+    if (!campo) {
+        return true;
+    }
+    const tabela = campo.closest('div#principal, body')?.querySelector('table.table-container');
+    if (!tabela) {
+        return true;
+    }
+
+    const termo = campo.value.trim().toLowerCase();
+    const normalizar = (s) => s.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+    const alvo = normalizar(termo);
+    const linhas = tabela.querySelectorAll('tbody tr');
+    const mensagem = idMensagem ? document.getElementById(idMensagem) : null;
+    let visiveis = 0;
+
+    linhas.forEach(function (linha) {
+        const texto = normalizar(linha.textContent || '');
+        const casa = alvo === '' || texto.indexOf(alvo) !== -1;
+        linha.classList.toggle('oculto-busca', !casa);
+        if (casa) {
+            visiveis += 1;
+        }
+    });
+
+    if (mensagem) {
+        mensagem.hidden = !(alvo !== '' && visiveis === 0);
+    }
+    return true;
+}
+
+/* Limpa o campo de busca, restaura todas as linhas e esconde a mensagem. */
+function limparFiltroTabela(idCampo, idMensagem) {
+    const campo = document.getElementById(idCampo);
+    if (campo) {
+        campo.value = '';
+        campo.focus();
+    }
+    filtrarTabelaInstantanea(idCampo, idMensagem);
+    return false; /* nunca envia o formulario */
+}
+
+/* Auxilia a busca por número de ramal a partir do campo #ramal.
+   Sempre que possível, delega para filtrarTabelaPorRamalHelper (carregado
+   pelo topo da página). Isso evita ter que manter três cópias da mesma
+   lógica no funcoes.js. */
+function filtrarTabelaPorRamal(idCampoSetor, idMensagem) {
+    if (typeof filtrarTabelaPorRamalHelper === 'function') {
+        return filtrarTabelaPorRamalHelper(idCampoSetor, idMensagem);
+    }
+    return filtrarTabelaPorRamalFallback(idCampoSetor, idMensagem);
+}
+
+/* Fallback caso o helper novo ainda não esteja carregado. */
+function filtrarTabelaPorRamalFallback(idCampoSetor, idMensagem) {
+    const campoRamal = document.getElementById('ramal');
+    if (!campoRamal) {
+        return true;
+    }
+    const tabela = campoRamal.closest('div#principal, body')?.querySelector('table.table-container');
+    if (!tabela) {
+        return true;
+    }
+    const termo = campoRamal.value.trim().toLowerCase();
+    const colunasRamal = tabela.querySelectorAll('td.ramal');
+    const mensagem = idMensagem ? document.getElementById(idMensagem) : null;
+    const normalizar = (s) => s.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+    let qualquerVisivel = false;
+
+    colunasRamal.forEach(function (celula) {
+        const linha = celula.closest('tr');
+        if (!linha) {
+            return;
+        }
+        const valorCelula = (celula.querySelector('.ramal-valor') || celula).textContent || '';
+        const casa = termo === '' || normalizar(valorCelula).indexOf(termo) !== -1;
+        linha.classList.toggle('oculto-busca', !casa);
+        if (casa) {
+            qualquerVisivel = true;
+        }
+    });
+
+    if (mensagem) {
+        mensagem.hidden = !(termo !== '' && !qualquerVisivel);
+    }
+    return true;
 }
