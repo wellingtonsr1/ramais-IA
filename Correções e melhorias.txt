@@ -1,0 +1,12 @@
+Correção/melhoria - Data
+
+Aumentar tamanho do campo 'setor' de 25 para 35 - 07/05/2021
+Permitir valor zero em ramal. - 07/05/2021
+Ordenar na impressão em pdf - 07/05/2021
+Tirar os espaços das extremidades dos nomes - 07/05/2021
+Inclusão do charset=utf8 no script de conexão com o banco - 07/05/2021
+Não permitir exclusão de usuário admin caso tenha apenas 1 - 09/05/2021
+Permitir exclusão de setor apenas se estiver vazio - 10/05/2021
+Resoilvido o problema de ao clicar no ícone 'exibir usuários', se houvesse um nome de setor parecido, o usuário de um era exibido no outro. 
+
+http://br.phptherightway.com/

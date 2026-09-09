@@ -1,0 +1,54 @@
+0 - Testado em
+
+    0.1 - Sistemas Operacionais:
+        Windows 10 x64
+        Debian 10 x64 (Buster)
+
+    0.2 - Navegadores:
+        Mozilla Firefox 78.9.0 esr
+        Mozilla Firefox 87.0
+
+        Microsoft Edge 90.0
+
+        Google Chrome 89.0
+
+    0.3 - SGBD:
+        MySQL 8
+
+    0.4 - Servidor web:
+        Apache2 2.4
+    
+    0.5- Linguagem:
+        PHP 7.3
+
+    0.6 - Pacote Xampp:
+       Xampp v3.2.4
+
+1 - Requisitos
+
+    Opção 1:
+        MySQL 8.x.x
+        Apache2 2.x
+        PHP 7.x
+
+    Opção 2:
+        Xampp v3.x.x
+
+
+2 - Instalação
+
+    2.1 - Preparação do banco:
+        Após instalar o MySQL e definir uma senha para o root 
+        (senha que será usada no arquivo de conexão do sistema 'ramais'),
+        criar um banco com o nome 'listagemDeRamais' e executar o script de backup 
+        'listagemDeRamais.sql' que se econtra em ramais/backup-do-banco/ para criação 
+        e pupulação das tabelas (caso haja dados prévios).
+
+    2.2 - Usando MySQL, Apache2 e PHP instalados separadamente:
+            Após a preparação dos requisitos, Copiar a pasta 'ramais' para a pasta configurada no Apache2.
+
+    2.3 - Usando o Xampp:
+            Copiar a pasta 'ramais' para Xampp/htdocs.
+
+
+3 - Possíveis erros e soluções na instação do MySQL, Apache2 e PHP
