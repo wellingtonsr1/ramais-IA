@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/sessao.php';
 require_once __DIR__ . '/../includes/funcoes.php';
-require_once __DIR__ . '/validador-acesso.php';
+require_once __DIR__ . '/../controle/validador-acesso.php';
 cabecalhos_seguranca();
 
 $_SESSION['opcao'] = 'alt'; // the user is changing their own password

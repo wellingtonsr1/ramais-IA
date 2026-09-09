@@ -39,7 +39,7 @@ function verificarTextoResponsavel() {
 // Usuario
 function verificarTextoUsuario() {
     const input = document.getElementById('usuario');
-    let pattUsuario = /^[a-z]+[.]?([a-z]+)?$/;
+    let pattUsuario = /^[a-z]+([.][a-z]+)*$/;
     document.getElementById("spanUsuario").className =
         (input.value !== '' && !pattUsuario.test(input.value)) ? "visivel" : "nao-visivel";
 }
@@ -47,7 +47,7 @@ function verificarTextoUsuario() {
 // Funcionario (nome)
 function verificarTextoFuncionario() {
     const input = document.getElementById('nome');
-    let pattNome = /^[A-Za-zà-úÀ-ÚçÇ][A-Za-zà-úÀ-ÚçÇ\s\/\.\-]{0,24}$/;
+    let pattNome = /^[A-Za-zà-úÀ-ÚçÇ][A-Za-zà-úÀ-ÚçÇ\s\/\.\-]{0,38}$/;
     document.getElementById("spanFuncionario").className =
         (input.value !== '' && !pattNome.test(input.value)) ? "visivel" : "nao-visivel";
 }

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/sessao.php';
 require_once __DIR__ . '/../includes/funcoes.php';
-require_once __DIR__ . '/validador-acesso-admin.php';
+require_once __DIR__ . '/../controle/validador-acesso-admin.php';
 require_once __DIR__ . '/../controle/controle-buscar-funcionario.php';
 cabecalhos_seguranca();
 

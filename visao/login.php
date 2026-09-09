@@ -34,6 +34,14 @@ cabecalhos_seguranca();?>
                                 <div class="text-danger" role="alert">
                                     Usuário ou senha inválido(s)
                                 </div>
+                            <?php elseif (isset($_GET['login']) && $_GET['login'] === 'erro2'): ?>
+                                <div class="text-danger" role="alert">
+                                    Sessão expirada ou inválida. Faça login novamente.
+                                </div>
+                            <?php elseif (isset($_GET['senha']) && $_GET['senha'] === 'alterada'): ?>
+                                <div class="text-success" role="alert">
+                                    Senha alterada com sucesso. Faça login novamente.
+                                </div>
                             <?php endif; ?>
 
                             <div class="botoes-rodape-login">

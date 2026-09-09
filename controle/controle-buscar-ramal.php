@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/sessao.php';
 require_once __DIR__ . '/../controle/funcoes-de-controle.php';
 require_once __DIR__ . '/../modelo/buscar-ramal.php';
 
-function pegarListaSetores($setor)
+function pegarSetoresPorPrefixo($setor)
 {
     if (setor($setor)) {
         return buscarSetor($setor);

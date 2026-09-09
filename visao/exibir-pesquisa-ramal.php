@@ -15,7 +15,7 @@ $ehAdmin      = ($_SESSION['nivel'] ?? '') === 'admin';
 // P-19: guarded POST access (this page can be opened directly by URL)
 $encoding  = mb_internal_encoding();
 $setor     = mb_strtoupper(post_str('setor'), $encoding);
-$registros = pegarListaSetores($setor);
+$registros = pegarSetoresPorPrefixo($setor);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

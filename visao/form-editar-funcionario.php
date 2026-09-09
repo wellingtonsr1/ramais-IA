@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/sessao.php';
 require_once __DIR__ . '/../includes/funcoes.php';
-require_once __DIR__ . '/validador-acesso-admin.php'; // P-04: guard was missing
+require_once __DIR__ . '/../controle/validador-acesso-admin.php'; // P-04: guard was missing
 require_once __DIR__ . '/../controle/controle-listar-ramais.php';
 require_once __DIR__ . '/../modelo/buscar-funcionario.php';
 cabecalhos_seguranca();

@@ -248,6 +248,10 @@ input.search{
     color: #FF0000;
 }
 
+.text-success{
+    color: #2E8B57;
+}
+
 
 /*----------------------------------------Configuração do Listar usuários, Listar ramais----------------------------------*/
 a.btn-editar{ 
