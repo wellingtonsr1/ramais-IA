@@ -1,24 +1,25 @@
 <?php
-    include "../includes/cdns.php";
-    require_once "validador-acesso-admin.php";
-    require_once "../modelo/deletar-funcionario.php";
+/**
+ * Deletes an employee (admin only).
+ * SECURITY (P-08): was a GET link - now POST with CSRF.
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    //Variável $_GET definida ou vazia?
-    if (!isset($_GET) || empty($_GET)) {
-        $erro = 'Nada foi enviado.';
-    }else{
-        if(!empty($_GET['idFunc'])){
-            if(deletarFuncionario($_GET['idFunc'])){ 
-                $_SESSION['status'] = 'sucessoDel';
-             }else{ 
-                $_SESSION['status'] = 'erroDel';
-            }
-        }else{//algo está errado? 
-            $_SESSION['status'] = 'erroDel';
-        }
-        header('Location: ../visao/listar-funcionarios.php');
-    } 
-?>
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/validador-acesso-admin.php';
+require_once __DIR__ . '/../modelo/deletar-funcionario.php';
+
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('../visao/form-alterar-senha.php');
+}
+cabecalhos_seguranca();
+
+$idFunc = requisicao_id('idFunc');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !eh_post_valido() || $idFunc === null) {
+    $_SESSION['status'] = 'erroDel';
+    redirecionar('../visao/listar-funcionarios.php');
+}
+
+$_SESSION['status'] = deletarFuncionario($idFunc) ? 'sucessoDel' : 'erroDel';
+redirecionar('../visao/listar-funcionarios.php');

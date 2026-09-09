@@ -1,31 +1,19 @@
 <?php
-    require_once "../controle/validador-acesso-admin.php";
-    
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    //busca uma Lista com todos os usuários
-    function buscarUsuarios(){
-        //script de conexão com banco
-        require "conecta-banco.php";
+/**
+ * Lists all system users (admin screens).
+ * Note: SELECT of specific columns so the password hash never travels to views.
+ */
 
-        try {
-            //Query montada
-            $query = 'select * from usuarios';
+require_once "conecta-banco.php";
 
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao buscar a lista de usuários');
-            }else{
-                $listaDeRegistros = $stmt->fetchAll();
-        
-                return $listaDeRegistros;
-            }    
-        } catch (Exception $e) {
-            echo $e;
-        }  
+function buscarUsuarios()
+{
+    try {
+        $stmt = obter_conexao()->prepare('SELECT id, usuario, nivel, email, primeiroacesso FROM usuarios ORDER BY usuario');
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao listar usuarios: ' . $e->getMessage());
+        return [];
     }
-?>
+}

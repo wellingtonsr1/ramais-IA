@@ -1,32 +1,22 @@
 <?php
-    require_once "validador-acesso.php";
-    
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    function adicionarRamal($setor, $ramal, $responsavel){
-        //script de conexão com banco
-        require "conecta-banco.php";
+/**
+ * Inserts a new sector/ramal.
+ */
 
-        try {
-            //Query montada
-            $query = "insert into setores(setor, ramal, responsavel) values (:setor, :ramal, :responsavel)";
+require_once "conecta-banco.php";
 
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-         
-            $stmt->bindValue(':setor', $setor);
-            $stmt->bindValue(':ramal', $ramal);
-            $stmt->bindValue(':responsavel', $responsavel);
-
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao inserir os dados no banco.');
-            }else{
-                return TRUE;
-            }
-        } catch (Exception $e) {
-            echo $e;
-        } 
-    }      
-?>
+function adicionarRamal($setor, $ramal, $responsavel): bool
+{
+    try {
+        $stmt = obter_conexao()->prepare(
+            'INSERT INTO setores (setor, ramal, responsavel) VALUES (:setor, :ramal, :responsavel)'
+        );
+        $stmt->bindValue(':setor', $setor);
+        $stmt->bindValue(':ramal', $ramal);
+        $stmt->bindValue(':responsavel', ($responsavel === '' ? null : $responsavel));
+        return $stmt->execute();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao inserir ramal: ' . $e->getMessage());
+        return false;
+    }
+}

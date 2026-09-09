@@ -1,38 +1,37 @@
 <?php
-    require_once "../controle/validador-acesso-admin.php";
+/**
+ * Searches users by username prefix (admin) - visao/exibir-pesquisa-usuario.php.
+ * Returns an empty array when the record does not exist (callers iterate safely).
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    //Busca por um usuário específico
-    function buscarUsuario($usuario){
-        //script de conexão com banco
-        require "conecta-banco.php";
+require_once "conecta-banco.php";
 
-        $usuario = "$usuario%";
-
-        try {
-            //Query montada
-            //$query = "select * from usuarios where usuario=:usuario";
-            $query = "SELECT * FROM `usuarios` WHERE `usuario` like :usuario";
-
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            
-            //$stmt->bindValue(':usuario', $usuario);
-            $stmt->bindParam(':usuario', $usuario);
-            
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao buscar usuário');
-            }else{
-                //retorna um objeto
-                $registro = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-                return $registro;
-            }
-        } catch (Exception $e) {
-            echo $e;
-        } 
+function buscarUsuarioPorPrefixo($usuario)
+{
+    try {
+        $stmt = obter_conexao()->prepare(
+            'SELECT id, usuario, nivel, email, primeiroacesso FROM usuarios WHERE usuario LIKE :usuario ORDER BY usuario'
+        );
+        $stmt->bindValue(':usuario', $usuario . '%');
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao buscar usuario: ' . $e->getMessage());
+        return [];
     }
-?>
+}
+
+/** Fetches one user by exact id - P-30: controllers validate level from the database. */
+function buscarUsuarioPorId($id)
+{
+    try {
+        $stmt = obter_conexao()->prepare('SELECT id, usuario, nivel, email, primeiroacesso FROM usuarios WHERE id = :id');
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        $stmt->execute();
+        $registro = $stmt->fetch();
+        return $registro === false ? null : $registro;
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao buscar usuario por id: ' . $e->getMessage());
+        return null;
+    }
+}

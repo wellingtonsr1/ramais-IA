@@ -1,0 +1,17 @@
+# Ramais - protection rules (Apache 2.4).
+# Requires AllowOverride All for this folder.
+
+Options -Indexes
+
+# Blocks direct access to directories that must never be served
+RedirectMatch 403 (?i)/(backup-do-banco|util|includes)/
+
+# Blocks sensitive file extensions anywhere in the project
+<FilesMatch "\.(sql|sql\.gz|lock|log|ini|env|md|txt)$">
+    Require all denied
+</FilesMatch>
+
+# Blocks the configuration files explicitly
+<FilesMatch "^(config\.php|config\.exemplo\.php)$">
+    Require all denied
+</FilesMatch>

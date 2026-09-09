@@ -1,0 +1,18 @@
+# Local secrets - never commit
+includes/config.php
+
+# Backup outputs must never be versioned
+backup-do-banco/backups/*
+!backup-do-banco/backups/.gitignore
+
+# System/IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Temporary diagnostic - never commit or deploy
+diagnostico-login.php
+
+# local probe script - never deploy
+probe-login.mjs

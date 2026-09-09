@@ -1,13 +1,12 @@
 <?php
-    require_once "../controle/validador-acesso-admin.php";
-    include_once "../modelo/buscar-lista-usuarios.php";
+/**
+ * Provides pegarListaUsuarios() - admin only.
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    function pegarListaUsuarios(){
-        $usuarios = buscarUsuarios();
-      
-        return $usuarios;
-    }
-?>
+require_once __DIR__ . '/../controle/validador-acesso-admin.php';
+require_once __DIR__ . '/../modelo/buscar-lista-usuarios.php';
+
+function pegarListaUsuarios()
+{
+    return buscarUsuarios();
+}

@@ -1,35 +1,25 @@
 <?php
-    //sessão não foi iniciada?
-    if(!isset($_SESSION)) { session_start(); }
-    
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
+/**
+ * Public sector search by name prefix - visao/exibir-pesquisa-ramal.php.
+ */
 
-    //Busca por um setor específico
-    function buscarSetor($setor){
-        
-        //script de conexão com banco
-        require "conecta-banco.php";
+require_once "conecta-banco.php";
 
-        try {
-            //Query montada
-            $query = 'select distinct s.setor, s.idSetor,  s.ramal, s.responsavel from funcionarios as f Right JOIN setores as s on s.idSetor = f.fk_idSetor WHERE s.setor like :setor';
-            
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':setor', $setor."%");
-            
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao buscar o setor.');
-            }else{
-                //retorna o registro
-                $registro = $stmt->fetchAll(PDO::FETCH_ASSOC); 
-
-                return $registro;
-            }  
-        } catch (Exception $e) {
-            echo $e;
-        } 
+function buscarSetor($setor)
+{
+    try {
+        $stmt = obter_conexao()->prepare(
+            'SELECT DISTINCT s.setor, s.idSetor, s.ramal, s.responsavel
+               FROM funcionarios f
+               RIGHT JOIN setores s ON s.idSetor = f.fk_idSetor
+              WHERE s.setor LIKE :setor
+              ORDER BY s.setor'
+        );
+        $stmt->bindValue(':setor', $setor . '%');
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao buscar setor: ' . $e->getMessage());
+        return [];
     }
-?>
+}

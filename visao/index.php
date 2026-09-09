@@ -1,16 +1,19 @@
 <?php
-    require_once "controle/validador-acesso.php";
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
 
-    //qual o nível de acesso do usuário?
-    switch ($_SESSION['nivel']) {
-        case 'admin':
-            header('Location: visao/admin.php'); 
-            break;
-        case 'atendente':
-            header('Location: visao/atendente.php'); 
-            break;
-        default:
-            header('Location: visao/listar-ramais.php'); 
-        break;
-    }
-?>
+if (!isset($_SESSION['autenticado']) || $_SESSION['autenticado'] !== 'SIM') {
+    redirecionar('visao/login.php');
+}
+
+cabecalhos_seguranca();
+
+$nivel = $_SESSION['nivel'] ?? '';
+switch ($nivel) {
+    case 'admin':
+        redirecionar('visao/admin.php');
+    case 'atendente':
+        redirecionar('visao/atendente.php');
+    default:
+        redirecionar('visao/listar-ramais.php');
+}

@@ -1,28 +1,46 @@
 <?php
-    include "../includes/cdns.php";
-    require_once "validador-acesso-admin.php";
-    require_once "../modelo/deletar-usuario.php";
-    require_once "../modelo/contar-nivel-usuario.php";
+/**
+ * Deletes a user (admin only).
+ * SECURITY (P-10): operator precedence fixed with parentheses and the current level
+ * is read from the DATABASE by id, not from the URL - cannot be manipulated (P-30).
+ * SECURITY (P-08): was a GET link - now POST with CSRF.
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    //Variável $_GET definida ou vazia?
-    if (!isset($_GET) || empty($_GET)) {
-        $erro = 'Nada foi enviado.';
-    }else{
-        if(!empty($_GET['id']) && !empty($_GET['nivel'])){
-            $totalNivelAdmin = contarNivel();
-            if($_GET['nivel'] == 'admin' && $totalNivelAdmin != 1 || $_GET['nivel'] == 'atendente'){
-                if(deletarUsuario($_GET['id'])){ 
-                    $_SESSION['status'] = 'sucessoDel';
-                }
-            }else{
-                $_SESSION['status'] = $totalNivelAdmin == 1 ? 'erroDelAdmin' : 'erroDel';
-            }
-        }else{//algo está errado? 
-             $_SESSION['status'] = 'erroDel';
-        }
-        header('Location: ../visao/listar-usuarios.php');
-    } 
-?>
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/validador-acesso-admin.php';
+require_once __DIR__ . '/../modelo/deletar-usuario.php';
+require_once __DIR__ . '/../modelo/buscar-usuario.php';
+require_once __DIR__ . '/../modelo/contar-nivel-usuario.php';
+
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('../visao/form-alterar-senha.php');
+}
+cabecalhos_seguranca();
+
+$id = requisicao_id('id');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !eh_post_valido() || $id === null) {
+    $_SESSION['status'] = 'erroDel';
+    redirecionar('../visao/listar-usuarios.php');
+}
+
+$registro = buscarUsuarioPorId($id);
+
+if ($registro === null) {
+    $_SESSION['status'] = 'erroDel';
+    redirecionar('../visao/listar-usuarios.php');
+}
+
+$totalAdmins = contarNivel();
+$nivelDoAlvo = $registro['nivel'];
+
+// P-10: parentheses are now explicit - the last admin cannot be deleted
+$podeDeletar = ($nivelDoAlvo === 'admin' && $totalAdmins > 1) || $nivelDoAlvo === 'atendente';
+
+if ($podeDeletar) {
+    $_SESSION['status'] = deletarUsuario($id) ? 'sucessoDel' : 'erroDel';
+} else {
+    $_SESSION['status'] = ($totalAdmins === 1) ? 'erroDelAdmin' : 'erroDel';
+}
+redirecionar('../visao/listar-usuarios.php');

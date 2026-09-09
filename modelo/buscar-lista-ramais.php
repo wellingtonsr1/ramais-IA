@@ -1,26 +1,8 @@
 <?php
-    //busca uma Lista com todos os setores
-    function buscarSetores(){
-        //script de conexão com banco
-        require "conecta-banco.php";
+/**
+ * Compatibility file: buscarSetores() lives in buscar-lista-funcionarios-por-setor.php.
+ * This avoids the duplicate function declaration that existed before (the file was
+ * included by visao/exibir-pesquisa-usuario.php).
+ */
 
-        try {
-            //Query montada
-            $query = 'select * from setores ORDER by setor';
-            
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao buscar a listar de ramais.');
-            }else{
-                $listaDeRegistros = $stmt->fetchAll(PDO::FETCH_ASSOC);
-       
-                return $listaDeRegistros;
-            }
-        } catch (Exception $e) {
-            echo $e;
-        }  
-    }
-?>
+require_once __DIR__ . '/buscar-lista-funcionarios-por-setor.php';

@@ -1,39 +1,33 @@
 <?php
-    include "../includes/cdns.php";
-    require_once "validador-acesso.php";
+/**
+ * Creates a sector/ramal (admin or atendente).
+ * SECURITY: CSRF (P-07) and POST-only (P-08).
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: form-alterar-senha.php'); }
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/validador-acesso.php';
+require_once __DIR__ . '/funcoes-de-controle.php';
+require_once __DIR__ . '/../modelo/inserir-ramal.php';
 
-    include_once "../controle/funcoes-de-controle.php";
-    include_once "../modelo/inserir-ramal.php";
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('../visao/form-alterar-senha.php');
+}
+cabecalhos_seguranca();
 
-    //POST não foi definida ou está vazia?
-    if (!isset($_POST) || empty($_POST)) {
-        $erro = 'Nada foi enviado.';
-    }else{
-        if(empty($_POST['setor']) || empty($_POST['ramal'])){
-            $erro = 'Setor ou ramal não informado(s)';
-        }else{
-            //variáveis recuperadas do formulário
-            $encoding = mb_internal_encoding(); 
-            $setor = mb_strtoupper(trim($_POST['setor']), $encoding);
-            $ramal = trim($_POST['ramal']);
-            $responsavel = mb_strtoupper(trim($_POST['responsavel']), $encoding);
-           
-            //tudo certo com os dados?
-            if(setor($setor) && ramal($ramal) && responsavel($responsavel)){
-                if(adicionarRamal($setor, $ramal, $responsavel)){ 
-                    $_SESSION['status'] = 'sucessoAdd';
-                }else{//algo está errado? 
-                    $_SESSION['status'] = 'erroAdd';
-                }
-            }else{//algo está errado? 
-                $_SESSION['status'] = 'erroAdd';
-            }
-            header('Location: ../visao/form-adicionar-ramal.php'); 
-        }
-    }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !eh_post_valido()) {
+    $_SESSION['status'] = 'erroAdd';
+    redirecionar('../visao/form-adicionar-ramal.php');
+}
 
-?>
+$encoding    = mb_internal_encoding();
+$setor       = mb_strtoupper(post_str('setor'), $encoding);
+$ramal       = post_str('ramal');
+$responsavel = mb_strtoupper(post_str('responsavel'), $encoding);
 
+if (setor($setor) && ramal($ramal) && responsavel($responsavel)) {
+    $_SESSION['status'] = adicionarRamal($setor, $ramal, $responsavel) ? 'sucessoAdd' : 'erroAdd';
+} else {
+    $_SESSION['status'] = 'erroAdd';
+}
+redirecionar('../visao/form-adicionar-ramal.php');

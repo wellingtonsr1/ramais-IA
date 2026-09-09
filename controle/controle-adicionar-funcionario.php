@@ -1,41 +1,42 @@
 <?php
-    include "../includes/cdns.php";
-    require_once "validador-acesso-admin.php";
-    include_once "funcoes-de-controle.php";
-    include_once "../modelo/adicionar-funcionario.php";
-    //include_once "../modelo/existe-usuario.php";
+/**
+ * Creates an employee (admin only).
+ * SECURITY: CSRF (P-07) and POST-only (P-08).
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: form-alterar-senha.php'); }
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/validador-acesso-admin.php';
+require_once __DIR__ . '/funcoes-de-controle.php';
+require_once __DIR__ . '/../modelo/adicionar-funcionario.php';
 
-    //POST não foi definida ou está vazia?
-    if (!isset($_POST) || empty($_POST)) {
-        $erro = 'Nada foi enviado.';
-    }else{    
-       
-        $encoding = mb_internal_encoding(); 
-        $nome = mb_strtoupper(trim($_POST['nome']), $encoding);
-        
-        // retira os '()' e o '-' do telefone
-        $telefone = str_replace('(', '', $_POST['telefone']);
-        $telefone = str_replace(')', '', $telefone);
-        $telefone = str_replace('-', '', $telefone);
-        $telefone = str_replace(' ', '', $telefone);
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('../visao/form-alterar-senha.php');
+}
+cabecalhos_seguranca();
 
-        $telefone = empty($telefone) ? '00000000000' : $telefone;
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !eh_post_valido()) {
+    $_SESSION['status'] = 'erroAdd';
+    redirecionar('../visao/form-adicionar-funcionario.php');
+}
 
-        $idSetor = $_POST['idSetor'];
+$encoding = mb_internal_encoding();
+$nome     = mb_strtoupper(post_str('nome'), $encoding);
 
-        //tudo certo com os dados?
-        if(nome($nome) && telefone($telefone) && (strlen($telefone) == 10 || strlen($telefone) == 11)){
-            if(adicionarFuncionario($nome, $telefone, $idSetor)){ 
-                $_SESSION['status'] = 'sucessoAdd';
-            }else{//algo está errado? 
-                $_SESSION['status'] = 'erroAdd';
-            }
-        }else{//algo está errado? 
-            $_SESSION['status'] = 'erroAdd';
-        }
-        header('Location: ../visao/form-adicionar-funcionario.php');
-    }
-?>
+// removes phone masks before validating
+$telefone = str_replace(['(', ')', '-', ' '], '', post_str('telefone'));
+$telefone = ($telefone === '') ? '00000000000' : $telefone;
+
+$idSetor = requisicao_id('idSetor');
+
+if ($idSetor === null) {
+    $_SESSION['status'] = 'erroAdd';
+    redirecionar('../visao/form-adicionar-funcionario.php');
+}
+
+if (nome($nome) && telefone($telefone)) {
+    $_SESSION['status'] = adicionarFuncionario($nome, $telefone, $idSetor) ? 'sucessoAdd' : 'erroAdd';
+} else {
+    $_SESSION['status'] = 'erroAdd';
+}
+redirecionar('../visao/form-adicionar-funcionario.php');

@@ -1,31 +1,19 @@
 <?php
-    require_once "../controle/validador-acesso-admin.php"; 
-    
-    if(!isset($_SESSION)) {session_start();}
+/**
+ * Counts how many 'admin' level users exist (last-admin protection).
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
+require_once "conecta-banco.php";
 
-    function contarNivel(){
-        //script de conexão com banco
-        require "conecta-banco.php";
-
-        try {
-            //Query montada
-            $query = "select nivel from usuarios where nivel=:nivel";
-
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':nivel', 'admin');
-            
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao buscar nível');
-            }else{
-                return $stmt->rowCount();
-            }
-        } catch (Exception $e) {
-            echo $e;
-        } 
+function contarNivel(): int
+{
+    try {
+        $stmt = obter_conexao()->prepare("SELECT COUNT(*) AS total FROM usuarios WHERE nivel = 'admin'");
+        $stmt->execute();
+        $linha = $stmt->fetch();
+        return (int)($linha['total'] ?? 0);
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao contar administradores: ' . $e->getMessage());
+        return -1;
     }
-?>
+}

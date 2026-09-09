@@ -1,28 +1,65 @@
 <?php
-    // Incluindo o autoload do Composer para carregar a biblioteca
-    //require_once 'vendor/autoload.php';
+/**
+ * Database backup (mysqldump-php).
+ * SECURITY (P-16): previously executable by anyone via URL. Now it only runs
+ * on the CLI or for an authenticated admin session. P-01: credentials come
+ * from includes/config.php (never committed).
+ */
 
-    // Incluindo a classe que criamos
-    require_once 'class/BackupDatabase.php';
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
 
-    require_once 'mysqldump/Mysqldump.php';
+$ehCli = (PHP_SAPI === 'cli');
+if (!$ehCli) {
+    if (($_SESSION['autenticado'] ?? '') !== 'SIM' || ($_SESSION['nivel'] ?? '') !== 'admin') {
+        http_response_code(403);
+        exit('Acesso negado.');
+    }
+    cabecalhos_seguranca();
+}
 
-    require_once '../modelo/conecta-banco.php';
-  
+// Incluindo a classe que criamos e a biblioteca de dump
+require_once __DIR__ . '/class/BackupDatabase.php';
+require_once __DIR__ . '/mysqldump/Mysqldump.php';
 
-    // Como a geração do backup pode ser demorada, retiramos
-    // o limite de execução do script
-    set_time_limit(0);
+// Credentials from the external config (or environment variables)
+$caminhoConfig = __DIR__ . '/../includes/config.php';
+if (is_file($caminhoConfig)) {
+    $config = require $caminhoConfig;
+} else {
+    $config = [
+        'db' => [
+            'host' => getenv('DB_HOST') ?: 'localhost',
+            'name' => getenv('DB_NAME') ?: 'listagemDeRamais',
+            'user' => getenv('DB_USER') ?: '',
+            'pass' => getenv('DB_PASS') ?: '',
+        ],
+    ];
+}
+$db = $config['db'];
 
-    $host = 'localhost';
-    $base = 'listagemDeRamais';
-    $directory = 'backups';
+// Como a geração do backup pode ser demorada, retiramos o limite de execução
+set_time_limit(0);
 
-    // Utilizando a classe para gerar um backup na pasta 'backups'
-    // e manter os últimos dez arquivos
-    $backup = new BackupDatabase($directory, 10);
+$directory = __DIR__ . '/backups';
+if (!is_dir($directory)) {
+    mkdir($directory, 0770, true);
+}
 
-    $backup->setDatabase($host, $base, $user, $password);
+// Gera um backup na pasta 'backups' e mantém os últimos dez arquivos
+$backup = new BackupDatabase($directory, 10);
+$backup->setDatabase($db['host'], $db['name'], $db['user'], $db['pass']);
 
+try {
     $backup->generate();
-?>
+} catch (Exception $e) {
+    error_log('[ramais] Erro ao gerar backup: ' . $e->getMessage());
+    if (!$ehCli) {
+        header('Location: ../visao/mensagem.php?msg=erroBackup');
+    }
+    exit(1);
+}
+
+if (!$ehCli) {
+    header('Location: ../visao/mensagem.php?msg=backupRealizado');
+}

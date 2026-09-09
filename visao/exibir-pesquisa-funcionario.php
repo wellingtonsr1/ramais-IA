@@ -1,26 +1,26 @@
-<!DOCTYPE html>
+<?php
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/validador-acesso-admin.php';
+require_once __DIR__ . '/../controle/controle-buscar-funcionario.php';
+cabecalhos_seguranca();
 
-<?php  
-    require "../controle/validador-acesso-admin.php"; 
-    require "../controle/controle-buscar-funcionario.php";
+// first access?
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('form-alterar-senha.php');
+}
 
-    //sessão nao foi iniciada?
-    if(!isset($_SESSION)) { session_start(); }
+$ehAdmin = ($_SESSION['nivel'] ?? '') === 'admin';
+$exibirBotoes = $ehAdmin;
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){
-        header('Location: form-alterar-senha.php');
-    }  
-
-    //a sessão é do admim ou atendente?
-    $exibirBotoes = FALSE; 
-    if(isset($_SESSION['nivel']) && ($_SESSION['nivel'] == 'admin' /*|| $_SESSION['nivel'] == 'atendente')*/)){$exibirBotoes = TRUE; }
+$encoding = mb_internal_encoding();
+$nome = mb_strtoupper(post_str('nome'), $encoding);
+$listaDeRegistros = ($nome !== '') ? buscarFuncionario($nome) : [];
 ?>
-
+<!DOCTYPE html>
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-       <!--<link rel="stylesheet" type="text/css" href="css/normalize.css">-->
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
         <title>Listar Funcionários</title>
@@ -28,65 +28,51 @@
 
     <body>
         <div id="principal">
-            <!-- inclui o arquivo 'topo.php' nesta página -->
             <?php include_once "topo.php" ?>
-            
+
             <div id="area-filtrar">
-                <!--<div class="lado-esquerdo-filtrar"> 
-                    <form action="filtrar-funcionario.php" method="post">        
-                        <input class="campo-filtrar" type="text" name="nome" id="nome" autocomplete="off" autocorrect="off" autofocus required>
-                        <button class="btn-filtrar" id="btnBusca">Filtrar</button> 
-                    </form>
-                </div> -->
-                
                 <div class="lado-direito-filtrar">
-                   <!-- <a href="listar-ramais.php">Voltar</a> -->
-                    <?php //o botão 'sair' só aparecerá se o usário for o admin ou atendente 
-                        if(isset($_SESSION['nivel']) && $_SESSION['nivel'] == 'admin' /*|| isset($_SESSION['nivel']) == 'atendente'*/){ ?>
-                            <a href="form-adicionar-funcionario.php?idSetor=<?= $_GET['idSetor'] ?>&setor=<?= $_GET['setor'] ?>">Adicionar</a> 
-                    <?php } ?>
                     <a href="../index.php">Home</a>
-                    <?php  //o botão 'sair' só aparecerá se o usário for o admin ou atendente 
-                        if(isset($_SESSION['nivel']) == 'admin' || isset($_SESSION['nivel']) == 'atendente'){ ?>
-                            <a href="../controle/logoff.php">Sair</a>     
-                    <?php } ?>
-                </div>    
+                    <a href="../controle/logoff.php">Sair</a>
+                </div>
             </div>
-            
+
             <div id="area-tabela">
                 <table class="table-container">
                     <thead>
-                        <tr> 
+                        <tr>
                             <th>Funcionário</th>
                             <th>Setor</th>
                             <th>Telefone</th>
-                            <?php  if($exibirBotoes){ ?>
-                                <th class="acao">Ação</th> 
-                            <?php } ?> 
-                        </tr> 
+                            <?php if ($exibirBotoes): ?>
+                                <th class="acao">Ação</th>
+                            <?php endif; ?>
+                        </tr>
                     </thead>
                     <tbody>
-                        <?php if(!isset($listaDeRegistros) && !empty($listaDeRegistros = buscarFuncionario($_POST['nome']))){                            
-                            foreach($listaDeRegistros as $linha){ 
-                                $dadosFuncionario = $linha; ?>
-                                <tr> 
-                                    <td><?= $dadosFuncionario['nome'] ?></td>
-                                    <td class="center"><?= $dadosFuncionario['setor'] ?></td> 
-                                    <td class="center"><?= $dadosFuncionario['telefone'] ?></td>
-                                    
-                                    <?php if($exibirBotoes){ ?> 
-                                        <td class="alinhamento-btn">   
-                                            <a class="btn-editar" title='Editar funcionário' href="form-editar-funcionario.php?idFunc=<?= $dadosFuncionario['idFunc']?>&nome=<?= $dadosFuncionario['nome'] ?>&telefone=<?= $dadosFuncionario['telefone'] ?>&setor=<?= $dadosFuncionario['setor'] ?>"></a> 
-                                            <a class="btn-excluir" title='Excluir funcionário' href="../controle/controle-deletar-funcionario.php?idFunc=<?= $dadosFuncionario['idFunc']?>"></a>  
-                                        </td> 
-                                    <?php } ?>
-                                </tr> 
-                            <?php } ;?>  
-                        <?php } ;?> 
+                        <?php foreach ($listaDeRegistros as $dadosFuncionario): ?>
+                            <tr>
+                                <td><?= e((string)$dadosFuncionario['nome']) ?></td>
+                                <td class="center"><?= e((string)$dadosFuncionario['setor']) ?></td>
+                                <td class="center"><?= e(formatarTelefone((string)($dadosFuncionario['telefone'] ?? ''))) ?></td>
+
+                                <?php if ($exibirBotoes): ?>
+                                    <td class="alinhamento-btn">
+                                        <a class="btn-editar" title="Editar funcionário" href="form-editar-funcionario.php?idFunc=<?= (int)$dadosFuncionario['idFunc'] ?>"></a>
+                                        <form action="../controle/controle-deletar-funcionario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dadosFuncionario['nome']) ?> ?');">
+                                            <?php echo campo_csrf(); ?>
+                                            <input type="hidden" name="idFunc" value="<?= (int)$dadosFuncionario['idFunc'] ?>">
+                                            <button type="submit" class="btn-excluir" title="Excluir funcionário"></button>
+                                        </form>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
                 <?php include_once "rodape.php" ?>
             </div>
         </div>
     </body>
+    <?php include "../includes/cdns.php"; // Swal for the delete confirmation ?>
 </html>

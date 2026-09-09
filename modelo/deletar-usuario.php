@@ -1,29 +1,18 @@
 <?php
-    require_once "../controle/validador-acesso-admin.php";
-    
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    function deletarUsuario($id){
-        //script de conexão com banco
-        require "conecta-banco.php";
+/**
+ * Deletes a user by id. The controller must protect the last admin.
+ */
 
-        try {
-            //Query montada
-            $query = "delete from usuarios where id=:id";
+require_once "conecta-banco.php";
 
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':id', $id);
-
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao deletar os dados do banco.');
-            }else{
-                return TRUE;
-            }
-        } catch (Exception $e) {
-            echo $e;
-        }        
+function deletarUsuario($id): bool
+{
+    try {
+        $stmt = obter_conexao()->prepare('DELETE FROM usuarios WHERE id = :id');
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        return $stmt->execute();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao deletar usuario: ' . $e->getMessage());
+        return false;
     }
-?>
+}

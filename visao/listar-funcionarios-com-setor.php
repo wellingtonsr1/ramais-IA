@@ -1,109 +1,102 @@
-<!DOCTYPE html>
+<?php
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/../modelo/buscar-lista-funcionarios-por-setor.php';
+cabecalhos_seguranca();
 
-<?php  
-    //require "../controle/validador-acesso-admin.php"; 
-    require "../controle/controle-listar-funcionarios-por-setor.php";
+// first access?
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('form-alterar-senha.php');
+}
 
-    //sessão nao foi iniciada?
-    if(!isset($_SESSION)) { session_start(); }
+$ehAdmin = ($_SESSION['nivel'] ?? '') === 'admin';
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){
-        header('Location: form-alterar-senha.php');
-    }  
+// P-19 + P-04: the sector is resolved from the DATABASE by id, never from the URL
+$idSetor = requisicao_id('idSetor');
+$setorNome = '';
+if ($idSetor !== null) {
+    foreach (buscarSetores() as $linha) {
+        if ((int)$linha['idSetor'] === $idSetor) {
+            $setorNome = (string)$linha['setor'];
+            break;
+        }
+    }
+}
+if ($setorNome === '') {
+    redirecionar('listar-ramais.php');
+}
 
-    //a sessão é do admim ou atendente?
-    $exibirBotoes = FALSE; 
-    if(isset($_SESSION['nivel']) && ($_SESSION['nivel'] == 'admin' /*|| $_SESSION['nivel'] == 'atendente')*/)){$exibirBotoes = TRUE; }
+$funcionarios = buscarFuncionariosPorSetor($idSetor);
 ?>
-
+<!DOCTYPE html>
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-       <!--<link rel="stylesheet" type="text/css" href="css/normalize.css">-->
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
         <title>Listar Funcionários</title>
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
     </head>
 
     <body>
         <div id="principal">
-            <!-- inclui o arquivo 'topo.php' nesta página -->
             <?php include_once "topo.php" ?>
-            
+
             <div id="area-filtrar">
-                <div class="lado-esquerdo-filtrar"> 
-                    <form action="filtrar-funcionario.php" method="post">        
+                <div class="lado-esquerdo-filtrar">
+                    <form action="filtrar-funcionario.php" method="post">
+                        <?php echo campo_csrf(); ?>
                         <input class="campo-filtrar" type="text" name="nome" id="nome" placeholder="Informe o nome"
                         autocomplete="off" autocorrect="off" autofocus required>
-                        <button class="btn-filtrar" id="btnBusca">Filtrar</button> 
+                        <button class="btn-filtrar" id="btnBusca">Filtrar</button>
                     </form>
-                </div> 
-                
+                </div>
+
                 <div class="lado-direito-filtrar">
-                    <a href="listar-ramais.php">Voltar</a> 
-                    <?php //o botão 'sair' só aparecerá se o usário for o admin ou atendente 
-                        if(isset($_SESSION['nivel']) && $_SESSION['nivel'] == 'admin' /*|| isset($_SESSION['nivel']) == 'atendente'*/){ ?>
-                            <a href="form-adicionar-funcionario.php?idSetor=<?= $_GET['idSetor'] ?>&setor=<?= $_GET['setor'] ?>">Adicionar</a> 
-                    <?php } ?>
+                    <a href="listar-ramais.php">Voltar</a>
+                    <?php if ($ehAdmin): ?>
+                        <a href="form-adicionar-funcionario.php?idSetor=<?= (int)$idSetor ?>&setor=<?= urlencode($setorNome) ?>">Adicionar</a>
+                    <?php endif; ?>
                     <a href="../index.php">Home</a>
-                    <?php  //o botão 'sair' só aparecerá se o usário for o admin ou atendente 
-                        if(isset($_SESSION['nivel']) == 'admin' || isset($_SESSION['nivel']) == 'atendente'){ ?>
-                            <a href="../controle/logoff.php">Sair</a>     
-                    <?php } ?>
-                </div>    
+                    <?php if ($ehAdmin): ?>
+                        <a href="../controle/logoff.php">Sair</a>
+                    <?php endif; ?>
+                </div>
             </div>
-            
+
             <div id="area-tabela">
                 <table class="table-container">
                     <thead>
-                        <tr> 
+                        <tr>
                             <th>Funcionário</th>
                             <th>Setor</th>
                             <th>Celular</th>
-                            <?php  if($exibirBotoes){ ?>
-                                <th class="acao">Ação</th> 
-                            <?php } ?> 
-                        </tr> 
+                            <?php if ($ehAdmin): ?>
+                                <th class="acao">Ação</th>
+                            <?php endif; ?>
+                        </tr>
                     </thead>
-                    
-                    <tbody>
-                        <?php if(!isset($listaDeRegistros) && !empty($listaDeRegistros = pegarListaFuncionarios($_GET['setor']))){
-                            $_SESSION['arrayFuncionarios'] = $listaDeRegistros;
-                                                    
-                            foreach($listaDeRegistros as $linha){ 
-                                $dadosFuncionario = $linha; ?>
-                                <tr> 
-                                    <td><?= $dadosFuncionario['nome'] ?></td>
-                                    <td class="center"><?= $_GET['setor'] ?></td> 
 
-                                    <?php // coloca a máscara no número do telefone para exibição
-                                        if(strlen($dadosFuncionario['telefone']) == 10){
-                                            $novo = substr_replace($dadosFuncionario['telefone'], '(', 0, 0);
-                                            $novo = substr_replace($novo, '9', 3, 0);
-                                            $novo = substr_replace($novo, ')', 3, 0);
-                                        }else{
-                                            $novo = substr_replace($dadosFuncionario['telefone'], '(', 0, 0);
-                                            $novo = substr_replace($novo, ')', 3, 0);
-                                        }  
-                                        $novo = substr_replace($novo, '-', 9, 0);
-                                        $novo = substr_replace($novo, ' ', 4, 0);
-                                        $dadosFuncionario['telefone'] = $novo;
-                                    ?>
-                                    <td class="center"><?= $dadosFuncionario['telefone'] ?></td>
-                                    
-                                    <?php if($exibirBotoes){ ?> 
-                                        <td class="alinhamento-btn">   
-                                            <a class="btn-editar" title='Editar funcionário' onClick="confirmarEdicao(event, ' <?= $dadosFuncionario['nome'] ?>')" href="form-editar-funcionario.php?idFunc=<?= $dadosFuncionario['idFunc']?>&nome=<?= $dadosFuncionario['nome'] ?>&telefone=<?= $dadosFuncionario['telefone'] ?>&setor=<?= $_GET['setor'] ?>"></a> 
-                                            <a class="btn-excluir" title='Excluir funcionário' onClick="confirmarExclusao(event, 'Deseja realmente excluir <?= $dadosFuncionario['nome'] ?> ?', '')" href="../controle/controle-deletar-funcionario.php?idFunc=<?= $dadosFuncionario['idFunc']?>"></a>  
-                                        </td> 
-                                    <?php } ?>
-                                </tr> 
-                            <?php } ;?>  
-                        <?php } ;?> 
+                    <tbody>
+                        <?php foreach ($funcionarios as $dadosFuncionario): ?>
+                            <tr>
+                                <td><?= e((string)$dadosFuncionario['nome']) ?></td>
+                                <td class="center"><?= e($setorNome) ?></td>
+                                <td class="center"><?= e(formatarTelefone((string)($dadosFuncionario['telefone'] ?? ''))) ?></td>
+
+                                <?php if ($ehAdmin): ?>
+                                    <td class="alinhamento-btn">
+                                        <a class="btn-editar" title="Editar funcionário" href="form-editar-funcionario.php?idFunc=<?= (int)$dadosFuncionario['idFunc'] ?>"></a>
+                                        <form action="../controle/controle-deletar-funcionario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dadosFuncionario['nome']) ?> ?');">
+                                            <?php echo campo_csrf(); ?>
+                                            <input type="hidden" name="idFunc" value="<?= (int)$dadosFuncionario['idFunc'] ?>">
+                                            <button type="submit" class="btn-excluir" title="Excluir funcionário"></button>
+                                        </form>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
                 <?php include_once "rodape.php" ?>

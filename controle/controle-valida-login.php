@@ -1,53 +1,52 @@
 <?php
-    //sessão não foi iniciada?
-    if(!isset($_SESSION)) { session_start(); }
-   
-    include_once "../modelo/buscar-login.php";
+/**
+ * Login processing.
+ * SECURITY (P-06): the old comparison (isset(...) == $_POST['usuario']) compared
+ * boolean to string and broke on PHP 8. Existence is now checked explicitly.
+ * SECURITY (P-15): session_regenerate_id(true) on login prevents session fixation.
+ */
 
-    $usuario_autenticado = false;
-    $nivel_usuario = null;
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
 
-    $usuario = $_POST['usuario'];
+require_once __DIR__ . '/../modelo/buscar-login.php';
 
-    $dadosUsuario = buscarUsuario($usuario);
-  
-    //Verifica se a senha informada é compatível com o hash salvo no banco?
-    $senhaVerificada = password_verify($_POST['senha'], $dadosUsuario['hashSenha']);
+$usuario = post_str('usuario');
+$senha   = (string)($_POST['senha'] ?? ''); // the password is not trimmed
 
-    //usuário informado é igual ao retornado do banco?
-    if((isset($dadosUsuario['usuario']) == $_POST['usuario']) && $senhaVerificada){ 
-        $idUsuario = $dadosUsuario['id'];
-        $nomeUsuario = $dadosUsuario['usuario'];
-        $nivelUsuario = $dadosUsuario['nivel'];
-        $primeiroacesso = $dadosUsuario['primeiroacesso'];
-        $usuarioAutenticado = true;
+// P-07: the login form also carries a CSRF token - validate it before anything else.
+if (!eh_post_valido()) {
+    $_SESSION['autenticado'] = 'NAO';
+    redirecionar('../visao/login.php?login=erro');
+}
+
+if ($usuario === '' || $senha === '') {
+    $_SESSION['autenticado'] = 'NAO';
+    redirecionar('../visao/login.php?login=erro');
+}
+
+$dadosUsuario = buscarUsuario($usuario);
+
+// P-06: the record must exist AND the username must match exactly.
+$hash = is_array($dadosUsuario) ? (string)($dadosUsuario['hashSenha'] ?? '') : '';
+$senhaVerificada = ($hash !== '') && password_verify($senha, $hash);
+$usuarioConfere  = is_array($dadosUsuario) && (($dadosUsuario['usuario'] ?? null) === $usuario);
+
+if ($usuarioConfere && $senhaVerificada) {
+    session_regenerate_id(true); // prevents session fixation
+
+    $_SESSION['autenticado']    = 'SIM';
+    $_SESSION['id']             = (int)$dadosUsuario['id'];
+    $_SESSION['usuario']        = $dadosUsuario['usuario'];
+    $_SESSION['nivel']          = $dadosUsuario['nivel'];
+    $_SESSION['primeiroacesso'] = $dadosUsuario['primeiroacesso'];
+    $_SESSION['ultimo_acesso']  = time();
+
+    if ($dadosUsuario['primeiroacesso'] === 'sim') {
+        redirecionar('../visao/form-alterar-senha.php');
     }
-    
-    //Usuário autenticado?
-    if($usuarioAutenticado){
-        //Criação das variáveis de sessão
-        $_SESSION['autenticado'] = 'SIM';
-        $_SESSION['id'] = $idUsuario;
-        $_SESSION['usuario'] = $nomeUsuario; 
-        $_SESSION['nivel'] = $nivelUsuario;
-        $_SESSION['primeiroacesso'] = $primeiroacesso;
-        //$_SESSION['hashSenha'] = $dadosUsuario['hashSenha'];
-        
-        //primeiro acesso?
-        if($primeiroacesso == 'sim'){  
-            header('Location: ../visao/form-alterar-senha.php');
-        }else{ 
-            //admin ou atendente?
-            if($nivelUsuario == 'admin'){
-                header('Location: ../visao/admin.php');
-            }else{
-                header('Location: ../visao/atendente.php');   
-            }     
-        }  
-    }else{
-        //usuário não foi autenticado?
-        $_SESSION['autenticado'] = 'NAO';
-        header('Location: ../visao/login.php?login=erro');
-    }
-   
-?>
+    redirecionar(($_SESSION['nivel'] === 'admin') ? '../visao/admin.php' : '../visao/atendente.php');
+}
+
+$_SESSION['autenticado'] = 'NAO';
+redirecionar('../visao/login.php?login=erro');

@@ -1,31 +1,22 @@
 <?php
-    require_once "../controle/validador-acesso-admin.php"; 
-    
-    if(!isset($_SESSION)) {session_start();}
+/**
+ * Username uniqueness check (exact match) used by controle/controle-adicionar-usuario.php.
+ * Returns the number of matching users, or -1 on database failure (fail safe:
+ * the controller treats anything different from 0 as 'user already exists').
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
+require_once "conecta-banco.php";
 
-    function existeUsuario($usuario){
-        //script de conexão com banco
-        require "conecta-banco.php";
-
-        try {
-            //Query montada
-            $query = "select * from usuarios where usuario=:usuario";
-
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':usuario', $usuario);
-            
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao buscar usuário');
-            }else{
-                return $stmt->rowCount();
-            }
-        } catch (Exception $e) {
-            echo $e;
-        } 
+function existeUsuario($usuario): int
+{
+    try {
+        $stmt = obter_conexao()->prepare('SELECT COUNT(*) AS total FROM usuarios WHERE usuario = :usuario');
+        $stmt->bindValue(':usuario', $usuario);
+        $stmt->execute();
+        $linha = $stmt->fetch();
+        return (int)($linha['total'] ?? 0);
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao verificar existencia de usuario: ' . $e->getMessage());
+        return -1;
     }
-?>
+}

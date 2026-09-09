@@ -1,29 +1,18 @@
 <?php
-    require_once "../controle/validador-acesso.php";
+/**
+ * Deletes a sector/ramal by id. The controller must ensure the sector has no employees.
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    function deletarRamal($idSetor){
-        //script de conexão ao banco
-        require "conecta-banco.php";
+require_once "conecta-banco.php";
 
-        try {
-            //Query montada
-            $query = "delete from setores where idSetor=:idSetor";
-
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':idSetor', $idSetor);
-            
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao deletar dados do banco.');
-            }else{
-                return TRUE;
-            }
-        } catch (Exception $e) {
-            echo $e;
-        } 
+function deletarRamal($idSetor): bool
+{
+    try {
+        $stmt = obter_conexao()->prepare('DELETE FROM setores WHERE idSetor = :idSetor');
+        $stmt->bindValue(':idSetor', (int)$idSetor, PDO::PARAM_INT);
+        return $stmt->execute();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao deletar ramal: ' . $e->getMessage());
+        return false;
     }
-?>
+}

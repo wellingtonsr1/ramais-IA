@@ -1,17 +1,17 @@
-<?php 
-    //sessão não foi iniciada?
-    if(!isset($_SESSION)) {session_start();} 
+<?php
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
 
-    //variável de sessão foi definida e está vazia?
-    if(!isset($_SESSION['usuario']) && empty($_SESSION['usuario'])){$_SESSION['usuario'] = 'convidado';}
+if (!isset($_SESSION['usuario']) || $_SESSION['usuario'] === '') {
+    $_SESSION['usuario'] = 'convidado';
+}
 ?>
 
 <div id="topo">
-    <!-- inclui o script funcoes.js em todas as páginas-->
     <script src="../js/funcoes.js"></script>
-    
+
     <div id="logo">
-        <img width="190"  src="../imagem/ipmjp.png" alt="logo-ipmjp">
+        <img width="190" src="../imagem/ipmjp.png" alt="logo-ipmjp">
     </div>
 
     <div id="texto-logo">

@@ -1,13 +1,12 @@
 <?php
-    //require_once "../controle/validador-acesso-admin.php";
-    include_once "../modelo/buscar-funcionario.php";
+/**
+ * Provides buscarFuncionario($nome) - admin only.
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    function buscarFuncionario($nome){
-        $funcionarios = pegarFuncionario($nome);
-        
-        return $funcionarios;
-    }
-?>
+require_once __DIR__ . '/../controle/validador-acesso-admin.php';
+require_once __DIR__ . '/../modelo/buscar-funcionario.php';
+
+function buscarFuncionario($nome)
+{
+    return pegarFuncionario($nome);
+}

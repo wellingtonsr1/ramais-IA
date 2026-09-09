@@ -1,32 +1,21 @@
 <?php
-    require_once "../controle/validador-acesso.php";
+/**
+ * Fetches the user record by exact username for login.
+ * Returns array when found, or null when it does not exist.
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
+require_once "conecta-banco.php";
 
-    function buscarUsuario($usuario){
-        //script de conexão com banco
-        require "conecta-banco.php";
-    
-        try {
-            //Query montada
-            $query = "select * from usuarios where usuario = :usuario";
-     
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':usuario', $usuario);
-            
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao deletar dados do banco.');
-            }else{
-                $dadosUsuario = $stmt->fetch();
-            
-                return $dadosUsuario;
-            }
-        } catch (Exception $e) {
-            echo $e;
-        } 
-        
+function buscarUsuario($usuario)
+{
+    try {
+        $stmt = obter_conexao()->prepare('SELECT * FROM usuarios WHERE usuario = :usuario');
+        $stmt->bindValue(':usuario', $usuario);
+        $stmt->execute();
+        $registro = $stmt->fetch();
+        return $registro === false ? null : $registro;
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao buscar usuario para login: ' . $e->getMessage());
+        return null;
     }
-?>
+}

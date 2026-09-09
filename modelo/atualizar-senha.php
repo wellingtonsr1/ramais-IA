@@ -1,28 +1,22 @@
 <?php
-    require_once "../controle/validador-acesso.php";
+/**
+ * Updates a user's password hash and 'first access' flag.
+ */
 
-    function atualizarSenha($id, $novoHash, $primeiroacesso){
-        //script de conexão com banco
-        require "conecta-banco.php";
-       
-        try {
-            //Query montada
-            $query = "update usuarios SET hashSenha=:novoHash, primeiroacesso=:primeiroacesso WHERE id=:id";
+require_once "conecta-banco.php";
 
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':id', $id);
-            $stmt->bindValue(':novoHash', $novoHash);
-            $stmt->bindValue(':primeiroacesso', $primeiroacesso);
-
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao deletar dados do banco.');
-            }else{
-                return TRUE;
-            }
-        } catch (Exception $e) {
-            echo $e;
-        } 
-    }           
-?>
+function atualizarSenha($id, $novoHash, $primeiroacesso): bool
+{
+    try {
+        $stmt = obter_conexao()->prepare(
+            'UPDATE usuarios SET hashSenha = :novoHash, primeiroacesso = :primeiroacesso WHERE id = :id'
+        );
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        $stmt->bindValue(':novoHash', $novoHash);
+        $stmt->bindValue(':primeiroacesso', $primeiroacesso);
+        return $stmt->execute();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao atualizar senha: ' . $e->getMessage());
+        return false;
+    }
+}

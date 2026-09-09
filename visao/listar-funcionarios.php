@@ -1,140 +1,111 @@
-<!DOCTYPE html>
+<?php
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/../controle/controle-listar-funcionarios.php';
+cabecalhos_seguranca();
 
-<?php  
-    //require "../controle/validador-acesso-admin.php"; 
-    require "../controle/controle-listar-funcionarios.php";
+// first access?
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('form-alterar-senha.php');
+}
 
-    //sessão nao foi iniciada?
-    if(!isset($_SESSION)) { session_start(); }
-
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){
-        header('Location: form-alterar-senha.php');
-    }  
-
-    //a sessão é do admim ou atendente?
-    $exibirBotoes = FALSE; 
-    if(isset($_SESSION['nivel']) && ($_SESSION['nivel'] == 'admin' || $_SESSION['nivel'] == 'atendente')){$exibirBotoes = TRUE; }
+// P-36: single source of truth for the button area
+$ehAdmin = ($_SESSION['nivel'] ?? '') === 'admin';
+$exibirBotoes = $ehAdmin;
 ?>
-
+<!DOCTYPE html>
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-       <!--<link rel="stylesheet" type="text/css" href="css/normalize.css">-->
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
         <title>Listar Funcionários</title>
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
     </head>
 
     <body>
         <div id="principal">
-            <!-- inclui o arquivo 'topo.php' nesta página -->
             <?php include_once "topo.php" ?>
-            
+
             <div id="area-filtrar">
-                <div class="lado-esquerdo-filtrar"> 
-                    <form action="filtrar-funcionario.php" method="post">        
+                <div class="lado-esquerdo-filtrar">
+                    <?php if ($ehAdmin): // the filter result page is admin-only ?>
+                    <form action="filtrar-funcionario.php" method="post">
+                        <?php echo campo_csrf(); ?>
                         <input class="campo-filtrar" type="text" name="nome" id="nome" placeholder="Informe o nome" autocomplete="off" autocorrect="off" autofocus required>
-                        <button class="btn-filtrar" id="btnBusca">Filtrar</button> 
+                        <button class="btn-filtrar" id="btnBusca">Filtrar</button>
                     </form>
-                </div> 
-                
+                    <?php endif; ?>
+                </div>
+
                 <div class="lado-direito-filtrar">
-                    <?php //o botão 'sair' só aparecerá se o usuário for o admin ou atendente 
-                        if(isset($_SESSION['nivel']) == 'admin' || isset($_SESSION['nivel']) == 'atendente'){ ?>
-                            <a href="form-adicionar-funcionario.php">Adicionar</a> 
-                    <?php } ?>
+                    <?php if ($ehAdmin): ?>
+                        <a href="form-adicionar-funcionario.php">Adicionar</a>
+                    <?php endif; ?>
                     <a href="../index.php">Home</a>
-                    <?php  //o botão 'sair' só aparecerá se o usuário for o admin ou atendente 
-                        if(isset($_SESSION['nivel']) == 'admin' || isset($_SESSION['nivel']) == 'atendente'){ ?>
-                            <a href="../controle/logoff.php">Sair</a>     
-                    <?php } ?>
-                </div>    
+                    <?php if ($ehAdmin): ?>
+                        <a href="../controle/logoff.php">Sair</a>
+                    <?php endif; ?>
+                </div>
             </div>
-            
+
             <div id="area-tabela">
                 <table class="table-container">
                     <thead>
-                        <tr> 
+                        <tr>
                             <th>Funcionário</th>
                             <th>Setor</th>
                             <th>Telefone</th>
-                           <!-- <th>e-mail</th>-->
-                            <?php  if($exibirBotoes){ ?>
-                                <th>Ação</th> 
-                            <?php } ?> 
-                        </tr> 
+                            <?php if ($exibirBotoes): ?>
+                                <th>Ação</th>
+                            <?php endif; ?>
+                        </tr>
                     </thead>
                     <tbody>
-                        <?php if(!isset($listaDeRegistros) && !empty($listaDeRegistros = pegarListaFuncionarios())){  
-                            $_SESSION['arrayFuncionarios'] = $listaDeRegistros;
-                                                     
-                            foreach($listaDeRegistros as $linha){ 
-                                $dadosFuncionario = $linha; ?>
-                               
-                                <tr> 
-                                    <td ><?= $dadosFuncionario['nome'] ?></td>
-                                    <td class="center"><?= $dadosFuncionario['setor'] ?></td> 
+                        <?php $listaDeRegistros = pegarListaFuncionarios(); ?>
+                        <?php foreach ($listaDeRegistros as $dadosFuncionario): ?>
+                            <tr>
+                                <td><?= e((string)$dadosFuncionario['nome']) ?></td>
+                                <td class="center"><?= e((string)$dadosFuncionario['setor']) ?></td>
+                                <td class="center"><?= e(formatarTelefone((string)($dadosFuncionario['telefone'] ?? ''))) ?></td>
 
-                                    <?php // coloca a máscara no número do telefone para exibição
-                                        if(strlen($dadosFuncionario['telefone']) == 10){
-                                            $novo = substr_replace($dadosFuncionario['telefone'], '(', 0, 0);
-                                            $novo = substr_replace($novo, '9', 3, 0);
-                                            $novo = substr_replace($novo, ')', 3, 0);
-                                            $novo = substr_replace($novo, '-', 9, 0);
-                                            $novo = substr_replace($novo, ' ', 4, 0);
-                                        }else{
-                                            $novo = substr_replace($dadosFuncionario['telefone'], '(', 0, 0);
-                                            $novo = substr_replace($novo, ')', 3, 0);
-                                            $novo = substr_replace($novo, '-', 9, 0);
-                                            $novo = substr_replace($novo, ' ', 4, 0);
-                                        }  
-                                        $dadosFuncionario['telefone'] = $novo;
-                                    ?>
-                                    <td class="center"><?= $dadosFuncionario['telefone'] ?></td>
-                                  
-                                    <?php  if($exibirBotoes){ ?> 
-                                        <td class="alinhamento-btn">   
-                                            <a class="btn-editar" title='Editar funcionário' onClick="confirmarEdicao(event, '<?= $dadosFuncionario['nome'] ?>')" href="form-editar-funcionario.php?idFunc=<?= $dadosFuncionario['idFunc']?>&nome=<?= $dadosFuncionario['nome'] ?>&setor=<?= $dadosFuncionario['setor'] ?>&telefone=<?= $dadosFuncionario['telefone'] ?>"></a> 
-                                            <a class="btn-excluir" title='Excluir funcionário' onClick="confirmarExclusao(event, 'Deseja realmente excluir <?= $dadosFuncionario['nome'] ?> ?', '')" href="../controle/controle-deletar-funcionario.php?idFunc=<?= $dadosFuncionario['idFunc'] ?>"></a>  
-                                        </td> 
-                                    <?php } ?>
-                                </tr> 
-                            <?php } ;?>  
-                        <?php } ;?> 
+                                <?php if ($exibirBotoes): ?>
+                                    <td class="alinhamento-btn">
+                                        <a class="btn-editar" title="Editar funcionário" href="form-editar-funcionario.php?idFunc=<?= (int)$dadosFuncionario['idFunc'] ?>"></a>
+                                        <!-- P-08: deletion is now a POST form with CSRF -->
+                                        <form action="../controle/controle-deletar-funcionario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dadosFuncionario['nome']) ?> ?');">
+                                            <?php echo campo_csrf(); ?>
+                                            <input type="hidden" name="idFunc" value="<?= (int)$dadosFuncionario['idFunc'] ?>">
+                                            <button type="submit" class="btn-excluir" title="Excluir funcionário"></button>
+                                        </form>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
                 <?php include_once "rodape.php" ?>
             </div>
         </div>
     </body>
-    <?php 
-        if(isset($_SESSION['status']) && !empty($_SESSION['status'])){
-            include "../includes/cdns.php"; 
-
-            switch ($_SESSION['status']) {
-                case 'sucessoDel': ?>
-                    <script> sucessoDel('listar-funcionarios.php') </script>   
-                    <?php  break;
-                case 'erroDel': ?>
-                    <script> erroDel('listar-funcionarios.php', 'Erro ao excluir o registro!') </script> 
-                    <?php break;
-                case 'sucessoEditar': ?>
-                    <script> sucessoEditar('listar-funcionarios.php') </script>
-                    <?php break;
-                case 'erroEditar': ?>
-                    <script> erroEditar('listar-funcionarios.php', 'Não foi possível alterar os dados!') </script>
-                    <?php break;
-            }
-            unset($_SESSION['status']);
-        }   
+    <?php
+    if (!empty($_SESSION['status'])) {
+        switch ($_SESSION['status']) {
+            case 'sucessoDel': ?>
+                <script> sucessoDel('listar-funcionarios.php') </script>
+                <?php break;
+            case 'erroDel': ?>
+                <script> erroDel('listar-funcionarios.php', 'Erro ao excluir o registro!') </script>
+                <?php break;
+            case 'sucessoEditar': ?>
+                <script> sucessoEditar('listar-funcionarios.php') </script>
+                <?php break;
+            case 'erroEditar': ?>
+                <script> erroEditar('listar-funcionarios.php', 'Não foi possível alterar os dados!') </script>
+                <?php break;
+        }
+        unset($_SESSION['status']);
+    }
     ?>
-
-     <!-- monta a máscara do telefone -->
-     <script type="text/javascript">
-        $("#telefone").mask("(00) 00000-0000");
-    </script>
 </html>

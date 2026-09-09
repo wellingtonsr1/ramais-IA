@@ -1,41 +1,42 @@
 <?php
-    require_once "../controle/validador-acesso-admin.php"; 
-    include_once "../controle/funcoes-de-controle.php";
-    include_once "../modelo/atualizar-funcionario.php";
+/**
+ * Updates an employee (admin only).
+ * SECURITY: CSRF (P-07), POST-only (P-08) and integer ids.
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    //seessão do admin?
-    if(isset($_SESSION['nivel']) && $_SESSION['nivel'] == 'admin'){
-        //variável POST não definida ou vazia?
-        if (!isset($_POST) || empty($_POST)) {
-            $erro = 'Nada foi enviado.';
-        }else{
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/validador-acesso-admin.php';
+require_once __DIR__ . '/funcoes-de-controle.php';
+require_once __DIR__ . '/../modelo/atualizar-funcionario.php';
 
-            //dados recuperados do formulário
-            $encoding = mb_internal_encoding(); 
-            $idFunc = $_POST['idFunc'];
-            $nome = mb_strtoupper(trim($_POST['nome']), $encoding);
-            
-            $telefone = str_replace('(', '', $_POST['telefone']);
-            $telefone = str_replace(')', '', $telefone);
-            $telefone = str_replace('-', '', $telefone);
-            $telefone = str_replace(' ', '', $telefone);
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('../visao/form-alterar-senha.php');
+}
+cabecalhos_seguranca();
 
-            $telefone = empty($telefone) ? '00000000000' : $telefone;
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !eh_post_valido()) {
+    $_SESSION['status'] = 'erroEditar';
+    redirecionar('../visao/listar-funcionarios.php');
+}
 
-            $idSetor = $_POST['idSetor'];
+$idFunc  = requisicao_id('idFunc');
+$idSetor = requisicao_id('idSetor');
 
-            //tudo certo com os dados?
-            if(nome($nome) && telefone($telefone) && (strlen($telefone) == 10 || strlen($telefone) == 11)){
-                if(atualizarFuncionario($idFunc, $nome, $telefone, $idSetor)){ 
-                     $_SESSION['status'] = 'sucessoEditar';
-                }
-            }else{//algo está errado? 
-                $_SESSION['status'] = 'erroEditar';
-            }
-            header('Location: ../visao/listar-funcionarios.php');
-        } 
-    }
-?>
+if ($idFunc === null || $idSetor === null) {
+    $_SESSION['status'] = 'erroEditar';
+    redirecionar('../visao/listar-funcionarios.php');
+}
+
+$encoding = mb_internal_encoding();
+$nome     = mb_strtoupper(post_str('nome'), $encoding);
+
+$telefone = str_replace(['(', ')', '-', ' '], '', post_str('telefone'));
+$telefone = ($telefone === '') ? '00000000000' : $telefone;
+
+if (nome($nome) && telefone($telefone)) {
+    $_SESSION['status'] = atualizarFuncionario($idFunc, $nome, $telefone, $idSetor) ? 'sucessoEditar' : 'erroEditar';
+} else {
+    $_SESSION['status'] = 'erroEditar';
+}
+redirecionar('../visao/listar-funcionarios.php');

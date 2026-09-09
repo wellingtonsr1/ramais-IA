@@ -1,14 +1,11 @@
 <?php
-    //require_once "../controle/validador-acesso-admin.php";
-    include_once "../modelo/buscar-lista-funcionarios-por-setor.php";
+/**
+ * Provides pegarListaFuncionarios($setor): employees filtered by sector or name.
+ */
 
-    //primeiro acesso?
-    //if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    function pegarListaFuncionarios($setor){
-        //$funcionarios = buscarFuncionarios($setor);
-        $funcionarios = buscarSetorFuncionarios($setor);
-        
-        return $funcionarios;
-    }
-?>
+require_once __DIR__ . '/../modelo/buscar-lista-funcionarios-por-setor.php';
+
+function pegarListaFuncionarios($setor)
+{
+    return buscarSetorFuncionarios($setor);
+}

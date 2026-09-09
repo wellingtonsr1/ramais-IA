@@ -1,82 +1,82 @@
-<!DOCTYPE html>
-
 <?php
-    //sessão não foi iniciada?
-    if(!isset($_SESSION)) { session_start(); } 
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/../controle/controle-buscar-ramal.php';
+cabecalhos_seguranca();
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
+// first access?
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('../visao/form-alterar-senha.php');
+}
 
-    include "../controle/controle-buscar-ramal.php";
-    
-    //a sessão é o admim ou atendente?
-    $exibirBotoes = FALSE;
-    if(isset($_SESSION['nivel']) && ($_SESSION['nivel'] == 'admin' || $_SESSION['nivel'] == 'atendente')){ $exibirBotoes = TRUE; }   
+$exibirBotoes = in_array($_SESSION['nivel'] ?? '', ['admin', 'atendente'], true);
+$ehAdmin      = ($_SESSION['nivel'] ?? '') === 'admin';
+
+// P-19: guarded POST access (this page can be opened directly by URL)
+$encoding  = mb_internal_encoding();
+$setor     = mb_strtoupper(post_str('setor'), $encoding);
+$registros = pegarListaSetores($setor);
 ?>
-
+<!DOCTYPE html>
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-       <!--<link rel="stylesheet" type="text/css" href="css/normalize.css">-->
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
         <title>Pesquisar ramal</title>
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
     </head>
 
     <body>
         <div id="principal">
-            <!-- inclui o arquivo 'topo.php' nesta página -->
             <?php include_once "topo.php" ?>
 
             <div id="area-filtrar">
                 <div class="lado-direito-filtrar">
-                    <a href="../index.php">Home</a> 
+                    <a href="../index.php">Home</a>
                     <a href="listar-ramais.php">Exibir lista</a>
-                </div>    
+                </div>
             </div>
 
-           <div id="area-tabela">
-                <table class="table-container"> 
+            <div id="area-tabela">
+                <table class="table-container">
                     <thead>
-                        <tr>  
-                            <th>Setor</th> 
+                        <tr>
+                            <th>Setor</th>
                             <th>Ramal</th>
-                            <th class="email"s>Responsável</th>
-                            <?php  if($exibirBotoes){ ?>
-                                <th>Ação</th> 
-                            <?php } ?>
-                        </tr> 
+                            <th class="email">Responsável</th> <!-- P-21: removed the 's' typo -->
+                            <?php if ($exibirBotoes): ?>
+                                <th>Ação</th>
+                            <?php endif; ?>
+                        </tr>
                     </thead>
                     <tbody>
-                        <?php 
-                            $setor = mb_strtoupper($_POST['setor']);
-                            $registro = pegarListaSetores($setor);
+                        <?php foreach ($registros as $dados): ?>
+                            <?php $ramalExibido = ($dados['ramal'] == 0) ? '' : $dados['ramal']; ?>
+                            <tr>
+                                <td><?= e((string)$dados['setor']) ?></td>
+                                <td class="center"><?= e((string)$ramalExibido) ?></td>
+                                <td class="email"><?= e((string)($dados['responsavel'] ?? '')) ?></td>
 
-                            if(isset($registro) && !empty($registro)){ ?>
-                                <?php foreach($registro as $linha){
-                                    $dados = $linha;?>
-                                    <tr> 
-                                        <td><?= $dados['setor'] ?></td>
-                                        <td class="center"><?= $dados['ramal'] ?></td>
-                                        <td class="email"><?= $dados['responsavel'] ?></td> 
-                                        
-                                        <td class="alinhamento-btn"> 
-                                        <a class="btn-funcionarios" title='Exibir Funcionários' href="../visao/listar-funcionarios-com-setor.php?idSetor=<?= $dados['idSetor'] ?>&setor=<?= $dados['setor'] ?>"></a> 
-                                        <?php  if(isset($_SESSION['nivel']) && ($_SESSION['nivel'] == 'admin' || $_SESSION['nivel'] == 'atendente')){ ?>
-                                            <a class="btn-editar" onClick="confirmarEdicao(event,  ' <?= $dados['setor'] ?>')" title='Alterar ramal' href="form-editar-ramal.php?idSetor=<?= $dados['idSetor'] ?>&setor=<?= $dados['setor'] ?>&ramal=<?= $dados['ramal'] ?>&responsavel=<?= $dados['responsavel'] ?>"></a> 
-                                            <?php  if($_SESSION['nivel'] == 'admin'){ ?>
-                                                <a class="btn-excluir" onClick="confirmarExclusao(event, 'Deseja realmente excluir <?= $dados['setor'] ?> ?', '')" title='Excluir ramal' href="../controle/controle-deletar-ramal.php?idSetor=<?= $dados['idSetor'] ?>&setor=<?= $dados['setor'] ?>"></a> 
-                                            <?php } ?>
-                                        <?php } ?>
-                                        </td>
-                                    </tr> 
-                                <?php  }?>  
-                            <?php  }?> 
-                    </tbody>  
-                </table> 
+                                <?php if ($exibirBotoes): ?>
+                                    <td class="alinhamento-btn">
+                                        <a class="btn-funcionarios" title="Exibir Funcionários" href="listar-funcionarios-com-setor.php?idSetor=<?= (int)$dados['idSetor'] ?>&setor=<?= urlencode((string)$dados['setor']) ?>"></a>
+                                        <a class="btn-editar" title="Alterar ramal" href="form-editar-ramal.php?idSetor=<?= (int)$dados['idSetor'] ?>&setor=<?= urlencode((string)$dados['setor']) ?>&ramal=<?= urlencode((string)$ramalExibido) ?>&responsavel=<?= urlencode((string)($dados['responsavel'] ?? '')) ?>"></a>
+
+                                        <?php if ($ehAdmin): ?>
+                                            <form action="../controle/controle-deletar-ramal.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dados['setor']) ?> ?');">
+                                                <?php echo campo_csrf(); ?>
+                                                <input type="hidden" name="idSetor" value="<?= (int)$dados['idSetor'] ?>">
+                                                <button type="submit" class="btn-excluir" title="Excluir ramal"></button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
                 <?php include_once "rodape.php" ?>
             </div>
         </div>

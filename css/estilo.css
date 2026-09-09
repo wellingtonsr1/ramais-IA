@@ -256,10 +256,25 @@ a.btn-editar{
     display: inline;
 }
 
-a.btn-excluir{ 
+a.btn-excluir{
     background-color: transparent;
     content: url("../imagem/excluir.png");
     display: inline;
+}
+
+/* P-08: exclusões agora são botões submit dentro de formulários POST */
+form.form-del{
+    display: inline;
+    margin: 0;
+}
+
+button.btn-excluir{
+    background: transparent url("../imagem/excluir.png") no-repeat center center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    cursor: pointer;
+    vertical-align: middle;
 }
 
 a.btn-alterar-senha{ 

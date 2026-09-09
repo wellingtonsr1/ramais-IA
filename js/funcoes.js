@@ -1,206 +1,105 @@
-function mostrarSenha(senha_1, senha_2){
-    if(senha_1 || senha_2){
-        if(senha_1 == 'senha'){
+function mostrarSenha(senha_1, senha_2) {
+    if (senha_1 || senha_2) {
+        if (senha_1 == 'senha') {
             let tipo = document.getElementById(senha_1);
-    
             tipo.type = (tipo.type == "password") ? "text" : "password";
-        }else{
+        } else {
             let tipoNovaSenha = document.getElementById(senha_1);
             let tipoSenhaConfirmada = document.getElementById(senha_2);
-    
             tipoNovaSenha.type = (tipoNovaSenha.type == "password") ? "text" : "password";
-            tipoSenhaConfirmada.type = tipoNovaSenha.type
+            tipoSenhaConfirmada.type = tipoNovaSenha.type;
         }
     }
 }
 
-//'ramal' do 'adicionar setor'
+// Ramal: digits only (hint shown; the value is NO LONGER wiped on each keyup - UX fix)
 function verificarTextoRamal() {
-    const input = document.getElementById('ramal')
-    //input.style.color = ''
-
-    document.getElementById("spanRamal").className = "nao-visivel";
-
-    let texto = input.value
-    let pattRamal = /^[0-9]+$/
-   
-    if(!pattRamal.test(texto)){
-        input.value = ''
-        document.getElementById("spanRamal").className = "visivel";
-        //input.style.color = 'red'
-    }   
+    const input = document.getElementById('ramal');
+    let pattRamal = /^[0-9]+$/;
+    document.getElementById("spanRamal").className =
+        (input.value !== '' && !pattRamal.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-//'setor' do 'adicionar setor'
+// Setor
 function verificarTextoSetor() {
-    const input = document.getElementById('setor')
-    //input.style.color = ''
-
-    document.getElementById("spanSetor").className = "nao-visivel";
-
-    let texto = input.value
-    //let pattSetor = /^[A-Za-zà-úÀ-ÚçÇ]+[_\/\.-]?(\s[A-Za-z]{2,3})?(\s?[A-Za-zà-úÀ-ÚçÇ]+)[_\/\.-]?(\s?[A-Za-zà-úÀ-ÚçÇ]+)?[\s\.]?([0-9]+)?$/
-    let pattSetor = /^[A-Za-zà-úÀ-ÚçÇ]+([_\/\.-]?(\s[A-Za-z]{2,3})?(\s?[A-Za-zà-úÀ-ÚçÇ]+)[_\/\.-]?(\s?[A-Za-zà-úÀ-ÚçÇ]+)?[\s\.]?([0-9]+)?)?$/
-   
-    if(!pattSetor.test(texto)){
-        input.value = ''
-        document.getElementById("spanSetor").className = "visivel";
-        //input.style.color = 'red'
-    }
+    const input = document.getElementById('setor');
+    let pattSetor = /^[A-Za-z0-9à-úÀ-ÚçÇ][A-Za-z0-9à-úÀ-ÚçÇ\s\/\.\-_]{0,34}$/;
+    document.getElementById("spanSetor").className =
+        (input.value !== '' && !pattSetor.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-//'usuario' do 'adicionar usuário'
+// Responsavel
 function verificarTextoResponsavel() {
-    const input = document.getElementById('responsavel')
-
-    document.getElementById("spanResponsavel").className = "nao-visivel";
-    
-    let patterResponsavel = /^[A-Za-zà-úÀ-ÚçÇ]+[\s]?([A-Za-z]+)?[-\s]?([A-Za-zà-úÀ-ÚçÇ]+)?$/
-  
-    if(!patterResponsavel.test(input.value)){
-        input.value = ''
-        document.getElementById("spanResponsavel").className = "visivel"; 
-    }
+    const input = document.getElementById('responsavel');
+    let pattResponsavel = /^[A-Za-zà-úÀ-ÚçÇ][A-Za-zà-úÀ-ÚçÇ\s\/\.\-]{0,24}$/;
+    document.getElementById("spanResponsavel").className =
+        (input.value !== '' && !pattResponsavel.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-//'usuario' do 'adicionar usuário'
+// Usuario
 function verificarTextoUsuario() {
-    const input = document.getElementById('usuario')
-
-    document.getElementById("spanUsuario").className = "nao-visivel";
-    
-    let patterUsuario = /^[a-z]+[.]?([a-z]+)?$/
-  
-    if(!patterUsuario.test(input.value)){
-        input.value = ''
-        document.getElementById("spanUsuario").className = "visivel"; 
-    }
+    const input = document.getElementById('usuario');
+    let pattUsuario = /^[a-z]+[.]?([a-z]+)?$/;
+    document.getElementById("spanUsuario").className =
+        (input.value !== '' && !pattUsuario.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-//'email' do 'adicionar setor' e 'adicionar usuário'
-function verificarTextoEmail() {
-    document.getElementById('email').style.color = ''
-    let texto = document.getElementById('email').value
-    let pattSetor = /^[a-z0-9.]+@[a-z0-9]+\.[a-z]+\.([a-z]+)?$/i
-   
-    if(!pattSetor.test(texto)){
-        document.getElementById('email').value = ''
-        document.getElementById('email').style.color = 'red'
-    }
-}
-
-//'Funcionario' do 'adicionar Funcionario'
+// Funcionario (nome)
 function verificarTextoFuncionario() {
-    const input = document.getElementById('nome')
-    //input.style.color = ''
-
-    document.getElementById("spanFuncionario").className = "nao-visivel";
-
-    let texto = input.value
-    //let pattNome = /^[A-Za-zà-úÀ-ÚçÇ]+[\s]?[-]?[\s]?[/]?([A-Za-z]+)?[-\s/]?([A-Za-zà-úÀ-ÚçÇ]+)?$/
-    let pattNome = /^[A-Za-zà-úÀ-ÚçÇ]+([\s][A-Za-z]{2,3})?[\s]?([A-Za-zà-úÀ-ÚçÇ]+)?$/
-
-    if(!pattNome.test(texto)){
-        input.value = ''
-        document.getElementById("spanFuncionario").className = "visivel";
-       // input.style.color = 'red'
-    }
+    const input = document.getElementById('nome');
+    let pattNome = /^[A-Za-zà-úÀ-ÚçÇ][A-Za-zà-úÀ-ÚçÇ\s\/\.\-]{0,24}$/;
+    document.getElementById("spanFuncionario").className =
+        (input.value !== '' && !pattNome.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-//'usuario' do 'adicionar usuário'
+// Telefone - P-25: the condition was INVERTED (it wiped the field when the
+// number was VALID). Now it only shows the hint when the value is invalid.
 function verificarTextoTelefone() {
-    const input = document.getElementById('telefone')
-
-    document.getElementById("spanTelefone").className = "nao-visivel";
-    
-    //let patterTelefone = /^\([0-9]{2}\)\s[0-9]{4,5}[-][0-9]{4}$/
-    let patterTelefone = /^[0-9]{10,11}$/
-  
-    if(patterTelefone.test(input.value)){
-        input.value = ''
-        document.getElementById("spanTelefone").className = "visivel"; 
-    }
+    const input = document.getElementById('telefone');
+    let pattTelefone = /^[0-9]{10,11}$/;
+    document.getElementById("spanTelefone").className =
+        (input.value !== '' && !pattTelefone.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-//senha do 'adicionar usuário'
+// Senha - minimum of 8 characters (P-28)
 function verificarTextoSenha() {
-    const input = document.getElementById('senha')
-
-    document.getElementById("spanSenha").className = "nao-visivel";
-   
-    let texto = input.value
-    let pattSenha = /^[A-Za-z0-9@$&!#%]+$/
-   
-    if(!pattSenha.test(texto)){
-        input.value = ''
-        document.getElementById("spanSenha").className = "visivel";  
-    }   
+    const input = document.getElementById('senha');
+    let pattSenha = /^[A-Za-z0-9@$&!#%]{8,}$/;
+    document.getElementById("spanSenha").className =
+        (input.value !== '' && !pattSenha.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-//'novaSenha' do 'alterar senha'
 function verificarTextoNovaSenha() {
-    const input = document.getElementById('novaSenha')
-
-    document.getElementById('spanNovaSenha').className = 'nao-visivel'
-
-    let novaSenha = input.value
-    let pattSenha = /^[A-Za-z0-9@$&!#%]+$/
-
-    if(!pattSenha.test(novaSenha)){
-        input.value = ''
-        document.getElementById('spanNovaSenha').className = "visivel"
-    }
+    const input = document.getElementById('novaSenha');
+    let pattSenha = /^[A-Za-z0-9@$&!#%]{8,}$/;
+    document.getElementById('spanNovaSenha').className =
+        (input.value !== '' && !pattSenha.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-//'senhaConfirmada' do 'alterar senha'
 function verificarTextoSenhaConfirmada() {
-    const input = document.getElementById('senhaConfirmada')
-  
-    document.getElementById('spanSenhaConfirmada').className = 'nao-visivel'
-    
-    let senhaConfirmada = input.value
-    let pattSenha = /^[A-Za-z0-9@$&!#%]+$/
-
-    if(!pattSenha.test(senhaConfirmada)){
-        input.value = ''
-        document.getElementById('spanSenhaConfirmada').className = "visivel"
-    }  
+    const input = document.getElementById('senhaConfirmada');
+    let pattSenha = /^[A-Za-z0-9@$&!#%]{8,}$/;
+    document.getElementById('spanSenhaConfirmada').className =
+        (input.value !== '' && !pattSenha.test(input.value)) ? "visivel" : "nao-visivel";
 }
 
-function compararSenhas(x, y) {
-    //const inputs = document.getElementsByTagName('input')
-    document.getElementById('spanIgualdade').className = 'nao-visivel'
-
-    let valor1 = x //inputs[1].value
-    let valor2 = y //inputs[2].value
-
-    if(valor1 != valor2){
-        document.getElementById('spanIgualdade').className = 'visivel'
-    }
-    
-}
-
-// Abre uma janela para exibição do organograma
+// Opens a window to display the organogram
 function abrirPopup() {
-    window.open('organograma.php')
+    window.open('organograma.php');
 }
 
-// usado na confirmação da exclusão dos dados. É chamado pelo onclick no botão
-function confirmarExclusao(e, titulo, subTitulo){
+/**
+ * P-08: confirmation for the DELETE forms (POST + CSRF).
+ * Used as onsubmit="return confirmarExclusaoForm(event, 'titulo', 'subtitulo');".
+ * When confirmed, the form is submitted programmatically (bypassing onsubmit).
+ */
+function confirmarExclusaoForm(e, titulo, subTitulo) {
     e.preventDefault();
-
-    const swalWithBootstrapButtons = Swal.mixin({
-        customClass: {
-            confirmButton: 'btn btn-success',
-            cancelButton: 'btn btn-danger'
-        },
-        buttonsStyling: false
-    })
 
     Swal.fire({
         position: 'top',
         title: titulo,
-        text: subTitulo,
+        text: subTitulo || '',
         type: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -210,20 +109,21 @@ function confirmarExclusao(e, titulo, subTitulo){
         reverseButtons: true
     }).then((result) => {
         if (result.value) {
-            location.href = e.target.href;
-            sucessoDel('listar-ramais.php')
+            e.target.submit();
         }
-    })
+    });
+
+    return false; // the default submission only happens after confirmation
 }
 
-//sucesso na exclusão?
-function sucessoDel(pagina){
-    document.addEventListener('DOMContentLoaded', function () { 
+//sucesso na exclusao?
+function sucessoDel(pagina) {
+    document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             position: 'top',
             title: 'O registro foi excluído com sucesso!',
             text: 'Dejesa excluir outro?',
-            icon: 'success',
+            type: 'success',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
@@ -232,38 +132,36 @@ function sucessoDel(pagina){
             reverseButtons: true
         }).then((result) => {
             if (result.value) {
-                location.href = '../visao/'+pagina;
-            }else{
+                location.href = '../visao/' + pagina;
+            } else {
                 location.href = '../index.php';
             }
-        })
-    })
+        });
+    });
 }
 
-//erro na exclusão?
-function erroDel(pagina, titulo){
-    document.addEventListener('DOMContentLoaded', function () { 
+//erro na exclusao?
+function erroDel(pagina, titulo) {
+    document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             position: 'top',
             title: titulo,
-            text: 'Verfique e tente novamente.',
-            icon: 'error',
-        }).then((result) => {
-            if (result.value) {
-                location.href = '../visao/'+pagina;
-            }
-        })
-    })
+            text: 'Verifique e tente novamente.',
+            type: 'error'
+        }).then(() => {
+            location.href = '../visao/' + pagina;
+        });
+    });
 }
 
-//sucesso na adição? 
-function sucessoAdd(obj){
-    document.addEventListener('DOMContentLoaded', function () { 
+//sucesso na adicao?
+function sucessoAdd(obj) {
+    document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             position: 'top',
             title: 'O registro foi salvo com sucesso!',
             text: 'Dejesa adicionar outro?',
-            icon: 'success',
+            type: 'success',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
@@ -273,22 +171,21 @@ function sucessoAdd(obj){
         }).then((result) => {
             if (result.value) {
                 location.href = '../visao/form-adicionar-' + obj + '.php';
-            }else{
+            } else {
                 location.href = '../index.php';
             }
-        })
-    })
+        });
+    });
 }
 
-//erro na adição?
-function erroAdd(obj, titulo){
-    document.addEventListener('DOMContentLoaded', function () { 
+//erro na adicao?
+function erroAdd(obj, titulo) {
+    document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             position: 'top',
             title: titulo,
-            //title: 'Não foi possível salvar os dados!',
             text: 'Voltar e tentar novamente?',
-            icon: 'error',
+            type: 'error',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
@@ -297,51 +194,22 @@ function erroAdd(obj, titulo){
             reverseButtons: true
         }).then((result) => {
             if (result.value) {
-                location.href = '../visao/form-adicionar-'+ obj +'.php';
-            }else{
-                location.href = '../index.php';   
+                location.href = '../visao/form-adicionar-' + obj + '.php';
+            } else {
+                location.href = '../index.php';
             }
-        })
-    })
+        });
+    });
 }
 
-// usado na confirmação da exclusão dos dados. É chamado pelo onclick no botão
-function confirmarEdicao(e, obj){
-    e.preventDefault();
-
-    const swalWithBootstrapButtons = Swal.mixin({
-        customClass: {
-            confirmButton: 'btn btn-success',
-            cancelButton: 'btn btn-danger'
-        },
-        buttonsStyling: false
-    })
-
-    Swal.fire({ 
-        position: 'top',
-        title:  "Deseja alterar os dados de " +obj + " ?",
-        type: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sim, alterar!',
-        cancelButtonText: 'Não, cancelar!',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.value) {
-            location.href = e.target.href;
-        }
-    })
-}
-
-//sucesso na edição? 
-function sucessoEditar(pagina){
-    document.addEventListener('DOMContentLoaded', function () { 
+//sucesso na edicao?
+function sucessoEditar(pagina) {
+    document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             position: 'top',
             title: 'O registro foi alterado com sucesso!',
             text: 'Dejesa alterar outro?',
-            icon: 'success',
+            type: 'success',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
@@ -350,22 +218,22 @@ function sucessoEditar(pagina){
             reverseButtons: true
         }).then((result) => {
             if (result.value) {
-                location.href = '../visao/'+pagina;
-            }else{
+                location.href = '../visao/' + pagina;
+            } else {
                 location.href = '../index.php';
             }
-        })
-    })
+        });
+    });
 }
 
-//erro na adição? 
-function erroEditar(pagina, titulo){
-    document.addEventListener('DOMContentLoaded', function () { 
+//erro na edicao?
+function erroEditar(pagina, titulo) {
+    document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             position: 'top',
             title: titulo,
             text: 'Deseja voltar e tentar novamente?',
-            icon: 'error',
+            type: 'error',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
@@ -374,38 +242,36 @@ function erroEditar(pagina, titulo){
             reverseButtons: true
         }).then((result) => {
             if (result.value) {
-                location.href = '../visao/'+pagina;
-            }else{
+                location.href = '../visao/' + pagina;
+            } else {
                 location.href = '../index.php';
             }
-        })
-    })
+        });
+    });
 }
 
-// sucesso ao editar ou resetar a senha?
-function sucessoSenha(pagina, titulo, subtitulo){
-    document.addEventListener('DOMContentLoaded', function () { 
+// sucesso ao redefinir a senha?
+function sucessoSenha(pagina, titulo, subtitulo) {
+    document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             position: 'top',
             title: titulo,
             text: subtitulo,
-            icon: 'success',
-        }).then((result) => {
-            if (result.value) {
-                location.href = pagina;
-            }
-        })
-    })
+            type: 'success'
+        }).then(() => {
+            location.href = pagina;
+        });
+    });
 }
 
-// erro ao editar ou resetar a senha?
-function erroSenha(titulo){
-    document.addEventListener('DOMContentLoaded', function () { 
+// erro ao alterar/redefinir a senha?
+function erroSenha(titulo) {
+    document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             position: 'top',
             title: titulo,
             text: 'Verifique e tente novamente.',
-            icon: 'error',
-        })
-    })
+            type: 'error'
+        });
+    });
 }

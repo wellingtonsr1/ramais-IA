@@ -1,8 +1,12 @@
 <?php
-    if(!isset($_SESSION)) { session_start(); } 
+/**
+ * Access guard: requires any authenticated session.
+ * SECURITY (P-05): redirects AND terminates execution (redirecionar() calls exit).
+ */
 
-    //não é autenticado?
-    if(!isset($_SESSION['autenticado']) || $_SESSION['autenticado'] != 'SIM'){
-        header('Location: ../visao/login.php?login=erro2');
-    }   
-?>
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+
+if (!isset($_SESSION['autenticado']) || $_SESSION['autenticado'] !== 'SIM') {
+    redirecionar('../visao/login.php?login=erro2');
+}

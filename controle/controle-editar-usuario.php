@@ -1,42 +1,53 @@
 <?php
-    include "../includes/cdns.php";
-    require_once "../controle/validador-acesso-admin.php"; 
-    include "../controle/funcoes-de-controle.php";
-    include_once "../modelo/atualizar-usuario.php";
-    require_once "../modelo/contar-nivel-usuario.php";
+/**
+ * Updates a user's level/email (admin only).
+ * SECURITY (P-30): the current level is read from the DATABASE by id,
+ * not from the form - protects the last admin against parameter manipulation.
+ */
 
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    //seessão do admin?
-    if(isset($_SESSION['nivel']) && $_SESSION['nivel'] == 'admin'){
-        //variável POST não definida ou vazia?
-        if (!isset($_POST) || empty($_POST)) {
-            $erro = 'Nada foi enviado.';
-        }else{
-            //dados recuperados do formulário
-            $id = $_POST['id'];
-            //$usuario = $_POST['usuario'];
-            $nivel = $_POST['nivel'];
-            $email = $_POST['email'];
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/validador-acesso-admin.php';
+require_once __DIR__ . '/funcoes-de-controle.php';
+require_once __DIR__ . '/../modelo/atualizar-usuario.php';
+require_once __DIR__ . '/../modelo/buscar-usuario.php';
+require_once __DIR__ . '/../modelo/contar-nivel-usuario.php';
 
-            //email não informado?
-            $email = empty($email) ? "não informado" : $email;          
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('../visao/form-alterar-senha.php');
+}
+cabecalhos_seguranca();
 
-            //tudo certo com os dados?
-            if(nivel($nivel) && email($email)){
-                $totalNivelAdmin = contarNivel();
-                if($totalNivelAdmin != 1 || $nivel == 'admin'){
-                    if(atualizarUsuario($id, $nivel, $email)){ 
-                        $_SESSION['status'] = 'sucessoEditar';
-                    }
-                }else{
-                    $_SESSION['status'] = $totalNivelAdmin == 1 ? 'erroEditarAdmin' : 'erroEditar';
-                }
-            }else{//algo está errado? 
-                $_SESSION['status'] = 'erroEditar';
-            } 
-           header('Location: ../visao/listar-usuarios.php');
-        } 
-    }
-?>
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !eh_post_valido()) {
+    $_SESSION['status'] = 'erroEditar';
+    redirecionar('../visao/listar-usuarios.php');
+}
+
+$id    = requisicao_id('id');
+$nivel = post_str('nivel');
+
+if ($id === null || !nivel($nivel)) {
+    $_SESSION['status'] = 'erroEditar';
+    redirecionar('../visao/listar-usuarios.php');
+}
+
+$registro = buscarUsuarioPorId($id);
+
+if ($registro === null) {
+    $_SESSION['status'] = 'erroEditar';
+    redirecionar('../visao/listar-usuarios.php');
+}
+
+$email = strtolower(post_str('email'));
+$email = ($email === '') ? 'não informado' : $email;
+
+$levelAtualDoAlvo = $registro['nivel'];
+$totalAdmins      = contarNivel();
+
+// last admin cannot be demoted (P-10, now based on database data)
+if ($levelAtualDoAlvo === 'admin' && $totalAdmins <= 1 && $nivel !== 'admin') {
+    $_SESSION['status'] = ($totalAdmins === 1) ? 'erroEditarAdmin' : 'erroEditar';
+} else {
+    $_SESSION['status'] = atualizarUsuario($id, $nivel, $email) ? 'sucessoEditar' : 'erroEditar';
+}
+redirecionar('../visao/listar-usuarios.php');

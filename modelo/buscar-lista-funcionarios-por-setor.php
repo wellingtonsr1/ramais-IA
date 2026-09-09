@@ -1,63 +1,99 @@
 <?php
-    //require_once "../controle/validador-acesso-admin.php";
-    
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: ../visao/form-alterar-senha.php'); }
-    
-    //busca uma Lista com todos os usuários
-    function buscarFuncionarios($setor){
-        //script de conexão com banco
-        require "conecta-banco.php";
+/**
+ * Sector searches used by the listing, public filter and deletion validation.
+ */
 
-        try {
-            //Query montada
-            //$query = 'select * from funcionarios';
-            $query = 'select f.idFunc, f.nome, f.telefone, s.idSetor, s.setor, s.ramal, s.responsavel from funcionarios as f INNER JOIN setores as s on s.idSetor = f.fk_idSetor WHERE s.setor like :setor or f.nome like :setor ORDER by f.nome';
-           
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':setor', $setor."%");
+require_once "conecta-banco.php";
 
-            return executaQuery($stmt);
-
-        } catch (Exception $e) {
-            echo $e;
-        }  
+/** All sectors ordered by name (public listing and PDF). */
+function buscarSetores()
+{
+    try {
+        $stmt = obter_conexao()->prepare('SELECT idSetor, setor, ramal, responsavel FROM setores ORDER BY setor');
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao listar setores: ' . $e->getMessage());
+        return [];
     }
+}
 
-    //busca uma Lista com todos os usuários
-    function buscarSetorFuncionarios($setor){
-        //script de conexão com banco
-        require "conecta-banco.php";
-
-        try {
-            //Query montada
-            //$query = 'select * from funcionarios';
-            $query = 'select f.idFunc, f.nome, f.telefone, s.idSetor, s.setor from funcionarios as f INNER JOIN setores as s on s.idSetor = f.fk_idSetor WHERE s.setor like :setor or f.nome like :setor ORDER by f.nome';
-           
-            //preparação dos valores recebidos para evitar SqlInjection
-            $stmt = $conexao->prepare($query);
-            $stmt->bindValue(':setor', $setor);
-
-            return executaQuery($stmt);
-            
-        } catch (Exception $e) {
-            echo $e;
-        }  
+/** Sector + responsible search (prefix by sector or employee name) - visao/filtrar-ramal.php. */
+function buscarSetorFuncionario($setor)
+{
+    try {
+        $stmt = obter_conexao()->prepare(
+            'SELECT DISTINCT s.setor, s.idSetor, s.ramal, s.responsavel
+               FROM funcionarios f
+               RIGHT JOIN setores s ON s.idSetor = f.fk_idSetor
+              WHERE s.setor LIKE :setor OR f.nome LIKE :nome
+              ORDER BY s.setor'
+        );
+        $stmt->bindValue(':setor', $setor . '%');
+        $stmt->bindValue(':nome', $setor . '%');
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao filtrar setores: ' . $e->getMessage());
+        return [];
     }
+}
 
-    function executaQuery($stmt){
-        try {
-            //problema na execução da query?
-            if(!$stmt->execute()){
-                throw new Exception('Erro ao buscar a lista de funcionários');
-            }else{
-                $listaDeRegistros = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-                return $listaDeRegistros;
-            }    
-        } catch (Exception $e) {
-            echo $e;
-        }  
+/** Lists employees filtering by sector name or employee name (prefix). */
+function buscarSetorFuncionarios($setor)
+{
+    try {
+        $stmt = obter_conexao()->prepare(
+            'SELECT f.idFunc, f.nome, f.telefone, s.idSetor, s.setor, s.ramal, s.responsavel
+               FROM funcionarios f
+              INNER JOIN setores s ON s.idSetor = f.fk_idSetor
+              WHERE s.setor LIKE :setor OR f.nome LIKE :nome
+              ORDER BY f.nome'
+        );
+        $stmt->bindValue(':setor', $setor . '%');
+        $stmt->bindValue(':nome', $setor . '%');
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao filtrar funcionarios por setor: ' . $e->getMessage());
+        return [];
     }
-?>
+}
+
+/** Lists employees of a specific sector (exact id) - visao/listar-funcionarios-com-setor.php. */
+function buscarFuncionariosPorSetor($idSetor)
+{
+    try {
+        $stmt = obter_conexao()->prepare(
+            'SELECT f.idFunc, f.nome, f.telefone, s.idSetor, s.setor, s.ramal, s.responsavel
+               FROM funcionarios f
+              INNER JOIN setores s ON s.idSetor = f.fk_idSetor
+              WHERE s.idSetor = :idSetor
+              ORDER BY f.nome'
+        );
+        $stmt->bindValue(':idSetor', (int)$idSetor, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao listar funcionarios do setor: ' . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Counts employees of a sector (P-30 basis: replaces the deletion check by sector NAME).
+ * Returns -1 on failure so controllers can fail safe (block the deletion).
+ */
+function contarFuncionariosPorSetor($idSetor): int
+{
+    try {
+        $stmt = obter_conexao()->prepare('SELECT COUNT(*) AS total FROM funcionarios WHERE fk_idSetor = :idSetor');
+        $stmt->bindValue(':idSetor', (int)$idSetor, PDO::PARAM_INT);
+        $stmt->execute();
+        $linha = $stmt->fetch();
+        return (int)($linha['total'] ?? 0);
+    } catch (Exception $e) {
+        error_log('[ramais] Erro ao contar funcionarios do setor: ' . $e->getMessage());
+        return -1;
+    }
+}

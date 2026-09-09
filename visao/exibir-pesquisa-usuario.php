@@ -1,67 +1,69 @@
-<!DOCTYPE html>
-
 <?php
-    require "../controle/validador-acesso-admin.php";
-    include_once "../controle/controle-buscar-usuario.php";
-    
-    //primeiro acesso?
-    if(isset($_SESSION['primeiroacesso']) && $_SESSION['primeiroacesso'] == 'sim'){ header('Location: form-alterar-senha.php'); }
-?>
+require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/../controle/validador-acesso-admin.php';
+require_once __DIR__ . '/../controle/controle-buscar-usuario.php';
+cabecalhos_seguranca();
 
+// first access?
+if (($_SESSION['primeiroacesso'] ?? '') === 'sim') {
+    redirecionar('form-alterar-senha.php');
+}
+
+// P-19: guarded POST access
+$usuario = strtolower(post_str('usuario'));
+$registros = verificarUsuario($usuario); // P-29: broken inline comment removed
+?>
+<!DOCTYPE html>
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-        <!--<link rel="stylesheet" type="text/css" href="css/normalize.css">-->
         <link rel="stylesheet" type="text/css" href="../css/estilo.css">
         <?php include "favicon.php"; ?>
         <title>Listagem de Ramais - Pesquisar usuário</title>
     </head>
-    
+
     <body>
         <div id="principal">
-            <!-- inclui o arquivo 'topo.php' nesta página -->
-            <?php include_once "topo.php" ;?>
+            <?php include_once "topo.php"; ?>
 
-            <div id="menu"> 
-                <div class="lado-direito-filtrar"><a href="../index.php">Home</a></div> 
+            <div id="menu">
+                <div class="lado-direito-filtrar"><a href="../index.php">Home</a></div>
                 <div id="area-tabela">
-                <table class="table-container"> 
-                    <thead>
-                        <tr> 
-                            <th>Usuário</th>
-                            <th>Nível</th>
-                            <th>e-mail</th>
-                            <th>Ação</th> 
-                        </tr> 
-                    </thead>
-                    <tbody>
-                        <?php
-                            $usuario = strtolower($_POST['usuario']);
-                            
-                            //$registro é um obj, e não um array..por isso usar o '->' para acessar o valor
-                            $registro = verificarUsuario($usuario);
-                            
-                            //if(isset($registro->usuario) || !empty($registro->usuario) && $registro->usuario == $usuario){ ?>
-                            <?php foreach($registro as $linha){
-                                $dados = $linha;?>
-                                <tr> 
-                                    <td><?= $dados['usuario'] ?></td>
-                                    <td class="center"><?= $dados['nivel'] ?></td>
-                                    <td class="center"><?= $dados['email'] ?></td> 
-                                    
-                                    <td class="alinhamento-btn"> 
-                                        <a class="btn-editar" title='Editar usuário' href="form-editar-usuario.php?id=<?= $dados['id'] ?>&usuario=<?= $dados['usuario'] ?>&nivel=<?= $dados['nivel'] ?>&email=<?= $dados['email'] ?>"></a> 
-                                        <a class="btn-excluir" title='Excluir usuário' href="../controle/controle-deletar-usuario.php?id=<?= $dados['id'] ?>"></a>
-                                        <a class="btn-alterar-senha" title='Redefinir senha' href="form-redefinir-senha.php?id=<?= $dados['id'] ?>&usuario=<?= $dados['usuario'] ?>"></a> 
-                                    </td> 
+                    <table class="table-container">
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Nível</th>
+                                <th>e-mail</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($registros as $dados): ?>
+                                <tr>
+                                    <td><?= e((string)$dados['usuario']) ?></td>
+                                    <td class="center"><?= e((string)$dados['nivel']) ?></td>
+                                    <td class="center"><?= e((string)($dados['email'] ?? '')) ?></td>
+
+                                    <td class="alinhamento-btn">
+                                        <a class="btn-editar" title="Editar usuário" href="form-editar-usuario.php?id=<?= (int)$dados['id'] ?>"></a>
+                                        <form action="../controle/controle-deletar-usuario.php" method="post" class="form-del" onsubmit="return confirmarExclusaoForm(event, 'Deseja realmente excluir <?= e((string)$dados['usuario']) ?> ?', '');">
+                                            <?php echo campo_csrf(); ?>
+                                            <input type="hidden" name="id" value="<?= (int)$dados['id'] ?>">
+                                            <button type="submit" class="btn-excluir" title="Excluir usuário"></button>
+                                        </form>
+                                        <a class="btn-alterar-senha" title="Redefinir senha" href="form-redefinir-senha.php?id=<?= (int)$dados['id'] ?>"></a>
+                                    </td>
                                 </tr>
-                            <?php } ?> 
-                    </tbody>
-                </table> 
-                <?php include_once "rodape.php" ?>
-            </div>
-            <div class="clear"></div> 
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php include_once "rodape.php" ?>
+                </div>
+                <div class="clear"></div>
             </div>
         </div>
     </body>
+    <?php include "../includes/cdns.php"; // Swal for the delete confirmation ?>
 </html>
