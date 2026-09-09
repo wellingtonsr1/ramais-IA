@@ -4,6 +4,7 @@
  */
 
 require_once __DIR__ . '/../includes/sessao.php';
+require_once __DIR__ . '/../includes/funcoes.php';
 
 $_SESSION = [];
 
