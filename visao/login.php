@@ -27,7 +27,7 @@ cabecalhos_seguranca();?>
 
                             <div>
                                 <input class="senha" type="password" name="senha" id="senha" placeholder="Digite sua senha">
-                                <button class="btn-senha" type="button" onmousedown="mostrarSenha('senha')" onmouseup="mostrarSenha('senha')"></button>
+                                <button class="btn-senha" type="button" onclick="mostrarSenha('senha')"></button>
                             </div>
 
                             <?php if (isset($_GET['login']) && $_GET['login'] === 'erro'): ?>

@@ -64,7 +64,7 @@ if ($registro === null) {
                             <div>
                                 <input class="campo-input" type="password" name="senhaConfirmada" id="senhaConfirmada" placeholder="Repita a senha"
                                 onkeyup="verificarTextoSenhaConfirmada()" required>
-                                <button class="btn-senha" type="button" onmousedown="mostrarSenha('novaSenha', 'senhaConfirmada')" onmouseup="mostrarSenha('novaSenha', 'senhaConfirmada')"></button>
+                                <button class="btn-senha" type="button" onclick="mostrarSenha('novaSenha', 'senhaConfirmada')"></button>
                             </div>
                             <div>
                                 <input type="checkbox" id="primeiroacesso" name="primeiroacesso" value="sim"> Usuário deve alterar a senha.

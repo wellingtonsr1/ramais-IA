@@ -50,7 +50,7 @@ $_SESSION['opcao'] = 'alt'; // the user is changing their own password
                             <div>
                                 <input class="campo-input" type="password" name="senhaConfirmada" id="senhaConfirmada" placeholder="Repita a senha"
                                 onkeyup="verificarTextoSenhaConfirmada()" required>
-                                <button class="btn-senha" type="button" onmousedown="mostrarSenha('novaSenha', 'senhaConfirmada')" onmouseup="mostrarSenha('novaSenha', 'senhaConfirmada')"></button>
+                                <button class="btn-senha" type="button" onclick="mostrarSenha('novaSenha', 'senhaConfirmada')"></button>
                             </div>
                         </div>
                         <div><p class="campo-obrigatorio-altera-senha"><span class="label-asterisco">*</span> Campo(s) de preenchimento obrigatório.</p></div>

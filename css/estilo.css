@@ -561,11 +561,21 @@ a.img-topo{
 }
 
 .btn-senha {
-    background-image: url("../imagem/olho.png");
+    /* Convencao (estado do campo, padrao Bootstrap): senha OCULTA -> olho riscado.
+       (O icone antes apontava para o arquivo externo ../imagem/olho.png; agora e
+       SVG inline, mesmo desenho: contorno do olho + pupila, sem biblioteca nova.) */
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2'%3E%3Cpath d='M1 12C5 5.5 19 5.5 23 12C19 18.5 5 18.5 1 12Z'/%3E%3Ccircle cx='12' cy='12' r='3.4' fill='%23333' stroke='none'/%3E%3Cpath d='M21 3L3 21' stroke='%23fff' stroke-width='4.5' stroke-linecap='round'/%3E%3Cpath d='M21 3L3 21' stroke-linecap='round'/%3E%3C/svg%3E") center center / 18px 16px no-repeat;
     width: 28px;
     height: 25px;
     border-radius: 6px;
     padding-top: 11px;
+ }
+
+/* Senha VISIVEL (o campo virou type="text") -> olho aberto.
+   O seletor de irmao reage apenas a mudanca de tipo que mostrarSenha() ja faz;
+   nenhuma logica JS foi alterada. */
+input[type="text"] + .btn-senha {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2'%3E%3Cpath d='M1 12C5 5.5 19 5.5 23 12C19 18.5 5 18.5 1 12Z'/%3E%3Ccircle cx='12' cy='12' r='3.4' fill='%23333' stroke='none'/%3E%3C/svg%3E");
  }
 
 /*-----------------------------------Configurção do form-editar-ramal-----------------------------------------*/
