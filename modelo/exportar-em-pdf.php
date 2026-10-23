@@ -28,13 +28,16 @@ class PDF extends FPDF
         $this->Ln();
     }
 
-    /** Converts UTF-8 to the Latin-1 encoding used by core fonts (PHP 8.2 safe). */
+    /** Converts UTF-8 to the Latin-1 encoding used by core fonts (PHP 8.2+ safe: no utf8_decode). */
     public function Cell($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '')
     {
         if (function_exists('mb_convert_encoding')) {
             $txt = mb_convert_encoding($txt, 'ISO-8859-1', 'UTF-8');
-        } elseif (function_exists('utf8_decode')) {
-            $txt = utf8_decode($txt);
+        } elseif (function_exists('iconv')) {
+            $convertido = iconv('UTF-8', 'ISO-8859-1', $txt);
+            if ($convertido !== false) {
+                $txt = $convertido;
+            }
         }
         parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link);
     }
