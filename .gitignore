@@ -16,3 +16,6 @@ diagnostico-login.php
 
 # local probe script - never deploy
 probe-login.mjs
+
+# deploy package - never commit (contains config with credentials)
+deploy-ramais.zip

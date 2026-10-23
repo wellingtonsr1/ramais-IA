@@ -4,7 +4,7 @@
  */
 
 require_once __DIR__ . '/../includes/sessao.php';
-require_once __DIR__ . '/../includes/funcoes.php';
+require_once __DIR__ . '/../includes/funcoes.php'; // redirecionar() lives here
 
 $_SESSION = [];
 
